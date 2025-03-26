@@ -15,7 +15,6 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 CC      ?=cc
-LDLIBS  +=-lm
 ZDIR    ?=./libs/zlib
 ZLIB=
 
@@ -26,10 +25,10 @@ else
 endif
 
 debug: CFLAGS+=-g3 -Og -Wall -Wextra -Wdouble-promotion -Wno-sign-compare \
-	-fsanitize=address,undefined -fno-omit-frame-pointer -DDEBUG
+	-fsanitize=address,undefined -fno-omit-frame-pointer
 debug: fqmerge
 
-release: CFLAGS+=-DNDEBUG -O3
+release: CFLAGS+=-O3
 release: fqmerge
 
 libz/libz.a:
@@ -53,5 +52,5 @@ src/%.o: src/%.c
 objects := $(patsubst %.c,%.o,$(wildcard src/*.c))
 
 fqmerge: $(objects)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(objects) -o $@ $(ZLIB) $(LDLIBS) 
+	$(CC) $(CFLAGS) $(objects) -o $@ $(ZLIB)
 

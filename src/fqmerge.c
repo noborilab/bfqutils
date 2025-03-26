@@ -25,7 +25,6 @@
 #include <locale.h>
 #include <limits.h>
 #include <errno.h>
-#include <math.h>
 #include "kseq.h"
 #include "zlib.h"
 
