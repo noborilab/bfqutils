@@ -1,8 +1,6 @@
 CC      ?=cc
 LDLIBS  +=-lm
 ZDIR    ?=./libs/zlib
-
-ZOPS=
 ZLIB=
 
 ifeq ($(z_dyn),)
