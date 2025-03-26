@@ -1,14 +1,21 @@
 # fqmerge: FastQ merging tool for PE reads
 
-This tool is meant to be used as a drop-in replacement for `fastp --merge`. The only differences from fastp are a smaller default minimum merge length and more aggressive base and quality score correction. (Additionally, fqmerge seems to properly trim some polyG tails in cases where fastp fails to do so, though I don't quite understand why.) Apart from that, fqmerge is intended to be a lightweight replacement with extremely low memory usage and very performant single-thread runtime.
+This tool is meant to be used as a drop-in replacement for `fastp --merge`. The only differences from fastp are a smaller default minimum merge length and more aggressive base and quality score correction. (Additionally, fqmerge seems to properly trim some polyG tails in cases where fastp fails to do so, though I don't quite understand why.) Apart from that, fqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very performant single-thread runtime (<15 min on 100M read pairs).
 
 ## Installation
 
-Requires gcc/clang and GNU Make, tested with macOS and Linux.
+Requires gcc/clang and GNU Make, tested with macOS and Linux. After downloading:
 
 ```sh
-make libz
+make libz 
 make release
+make test     # optional
+```
+
+To dynamically link to Zlib instead of building a static library:
+
+```sh
+make z_dyn=1 release
 ```
 
 ## Usage
