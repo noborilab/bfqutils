@@ -2,7 +2,7 @@
 
 echo "Running test of fqmerge output."
 
-if ! ../fqmerge -q testR1.fq testR2.fq > test.fq ; then
+if ! ../fqmerge -q testR1.fq.gz testR2.fq.gz > test.fq ; then
     echo "Test failed, fqmerge encountered an error."
     exit 1
 fi

@@ -14,6 +14,8 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+.PHONY: test
+
 CC      ?=cc
 ZDIR    ?=./libs/zlib
 ZLIB=
@@ -53,4 +55,7 @@ objects := $(patsubst %.c,%.o,$(wildcard src/*.c))
 
 fqmerge: $(objects)
 	$(CC) $(CFLAGS) $(objects) -o $@ $(ZLIB)
+
+test: fqmerge
+	(cd ./test && bash test.sh)
 
