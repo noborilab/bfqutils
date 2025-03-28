@@ -1,6 +1,6 @@
 # fqmerge: FastQ merging tool for PE reads
 
-This tool is meant to be used as a drop-in replacement for `fastp --merge`. The only differences from fastp are a smaller default minimum merge length and more aggressive base and quality score correction. (Additionally, fqmerge seems to properly trim some polyG tails in cases where fastp fails to do so, though I don't quite understand why. Nevertheless, the polyG trimming algorithm isn't perfect and will occasionally fail.) Apart from that, fqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very good single-thread performance (<15 min on 2x100M PE150 reads).
+This tool is meant to be used as a drop-in replacement for [`fastp --merge`](https://github.com/OpenGene/fastp?tab=readme-ov-file#merge-paired-end-reads). The only differences from fastp are a smaller default minimum merge length and more aggressive base and quality score correction. (Additionally, fqmerge seems to properly trim some polyG tails in cases where fastp fails to do so, though I don't quite understand why. Nevertheless, the polyG trimming algorithm isn't perfect and will occasionally fail.) Apart from that, fqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very good single-thread performance (<15 min on 2x100M PE150 reads).
 
 ## Installation
 
