@@ -26,12 +26,12 @@ else
 	LDLIBS+=-lz
 endif
 
+release: CFLAGS+=-O3
+release: bfqmerge
+
 debug: CFLAGS+=-g3 -Og -Wall -Wextra -Wdouble-promotion -Wno-sign-compare \
 	-fsanitize=address,undefined -fno-omit-frame-pointer
-debug: fqmerge
-
-release: CFLAGS+=-O3
-release: fqmerge
+debug: bfqmerge
 
 libz/libz.a:
 	(cd $(ZDIR) && ./configure --prefix=./ --static)
@@ -42,20 +42,20 @@ libz: libz/libz.a
 clean/libz:
 	$(MAKE) -C $(ZDIR) clean
 
-clean/fqmerge:
+clean/bfqmerge:
 	-rm -f src/*.o
-	-rm -f ./fqmerge
+	-rm -f ./bfqmerge
 
-clean: clean/libz clean/fqmerge
+clean: clean/libz clean/bfqmerge
 
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 objects := $(patsubst %.c,%.o,$(wildcard src/*.c))
 
-fqmerge: $(objects)
+bfqmerge: $(objects)
 	$(CC) $(CFLAGS) $(objects) -o $@ $(ZLIB)
 
-test: fqmerge
+test: bfqmerge
 	(cd ./test && bash test.sh)
 

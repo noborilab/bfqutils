@@ -1,5 +1,5 @@
 /*
- *   fqmerge: FastQ merging tool for PE reads
+ *   bfqmerge: FastQ merging tool for PE reads
  *   Copyright (C) 2025  Benjamin Jean-Marie Tremblay
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@
 #define error(do_exit, msg, ...) do { \
     fprintf(stderr, "[E::%s] " msg "\n", __func__, ##__VA_ARGS__); \
     if (do_exit) { \
-      fputs("Encountered fatal error, exiting. Run fqmerge -h for usage.\n", stderr); \
+      fputs("Encountered fatal error, exiting. Run bfqmerge -h for usage.\n", stderr); \
       exit(EXIT_FAILURE); \
     } } while (0) 
 #define quit(msg, ...) error(true, msg, ##__VA_ARGS__)
@@ -64,9 +64,9 @@ static inline void *calloc_or_die(size_t size, const char *func_name) {
 
 static void help(void) {
     printf(
-        "fqmerge v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
+        "bfqmerge v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
         "\n"
-        "Usage:  fqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq\n"
+        "Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq\n"
         " -o <int>  Required overlap for a merge to occur. Default: %d\n"
         " -d <int>  Maximum number of mismatches between alignments. Default: %d\n"
         " -p <dbl>  Maximum fraction of mismatches between alignments. Default: %.1f\n"
@@ -389,13 +389,13 @@ int main(int argc, char *argv[]) {
                 quiet = true;
                 break;
             case 'v':
-                printf("fqmerge v%s\n", FQMERGE_VERSION);
+                printf("bfqmerge v%s\n", FQMERGE_VERSION);
                 exit(EXIT_SUCCESS);
             case 'h':
                 help();
                 exit(EXIT_SUCCESS);
             default:
-                fputs("Encountered fatal error, exiting. Run fqmerge -h for usage.\n", stderr);
+                fputs("Encountered fatal error, exiting. Run bfqmerge -h for usage.\n", stderr);
                 exit(EXIT_FAILURE);
         }
     }
