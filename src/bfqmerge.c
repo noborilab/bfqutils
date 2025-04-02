@@ -281,10 +281,10 @@ static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, 
             quit("PE FastQ files do not have the same number of reads.\n");
         }
 
-        if (!trimPolyG(fwd_kseq, polyG_n)) continue;
-        if (!trimPolyG(rev_kseq, polyG_n)) continue;
         if (!trim3p(fwd_kseq, trimQ, trimW)) continue;
         if (!trim3p(rev_kseq, trimQ, trimW)) continue;
+        if (!trimPolyG(fwd_kseq, polyG_n)) continue;
+        if (!trimPolyG(rev_kseq, polyG_n)) continue;
 
         // https://github.com/OpenGene/fastp/blob/master/src/overlapanalysis.cpp
         offset = 0;
@@ -340,7 +340,8 @@ finish_merge:;
           if (merged_kseq->qual.s[i] < minPhredQual) lowQualNum++;
           if (dnatable[(unsigned char) merged_kseq->seq.s[i]] == 110) nBaseNum++;
         }
-        if ((lowQualNum > (int) (maxNonQualified * (float) merged_kseq->seq.l)) || (nBaseNum > maxNBases)) {
+        if ((lowQualNum > (int) (maxNonQualified * (float) merged_kseq->seq.l)) ||
+            (nBaseNum > maxNBases) || (merged_kseq->seq.l < overlapRequire)) {
             filtered_n++;
         } else if (gzip) {
             gzprintf(gz, "@%s %s merged_%d_%d\n%s\n+\n%s\n", merged_kseq->name.s, merged_kseq->comment.s,

@@ -486,7 +486,7 @@ int main(int argc, char *argv[]) {
         if (lengthHist_f != NULL) {
             fprintf(lengthHist_f, "Length\tCount\tFraction\n");
             for (int i = 0; i < lengthHist->l; i++) {
-                fprintf(lengthHist_f, "%d\t%lld\t%f\n", i, lengthHist->d[i], (double) lengthHist->d[i] / bases);
+                fprintf(lengthHist_f, "%d\t%lld\t%f\n", i, lengthHist->d[i], (double) lengthHist->d[i] / nReads);
             }
         }
         if (gcHist_f != NULL) {

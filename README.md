@@ -51,9 +51,9 @@ Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq
 
 bfqmerge is a simple program, which performs the following operations:
 
-1. Detect and trim polyG tails (`-g`). Failure to remove these can lead to bfqmerge thinking that sufficiently long stretches of Gs found in both reads of a pair are the overlapping parts of the reads.
+1. Detect and trim low quality bases from the 3' end of the reads (`-t`, `-w`). This helps reduce the possibility of false positive alignments between incorrect read segments, especially when expecting short inserts.
 
-2. Detect and trim low quality bases from the 3' end of the reads (`-t`, `-w`). Again, this helps reduce the possibility of false positive alignments between incorrect read segments, especially when expecting short inserts.
+2. Detect and trim polyG tails (`-g`). Failure to remove these can lead to bfqmerge thinking that sufficiently long stretches of Gs found in both reads of a pair are the overlapping parts of the reads. Due to the way some machines work, sequencing past the end of a read can lead to long stretches of Gs with high quality scores (which won't be trimmed in step 1).
 
 3. Find the best overlap, depending on user settings (`-o`, `-d`, `-p`).
 
