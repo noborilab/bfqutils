@@ -28,8 +28,8 @@
 #include "kseq.h"
 #include "zlib.h"
 
-#define FQMERGE_VERSION              "1.0"
-#define FQMERGE_YEAR                "2025"
+#define BFQMERGE_VERSION             "1.0"
+#define BFQMERGE_YEAR               "2025"
 
 #define DEFAULT_OVERLAP_REQUIRE         15
 #define DEFAULT_DIFF_LIMIT               5
@@ -78,7 +78,7 @@ static void help(void) {
         " -q        Make the program quiet.\n"
         " -v        Print the version and exit.\n"
         " -h        Print this help message and exit.\n"
-        , FQMERGE_VERSION, FQMERGE_YEAR
+        , BFQMERGE_VERSION, BFQMERGE_YEAR
         , DEFAULT_OVERLAP_REQUIRE
         , DEFAULT_DIFF_LIMIT
         , DEFAULT_DIFF_PERCENT_LIMIT
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
                 quiet = true;
                 break;
             case 'v':
-                printf("bfqmerge v%s\n", FQMERGE_VERSION);
+                printf("bfqmerge v%s\n", BFQMERGE_VERSION);
                 exit(EXIT_SUCCESS);
             case 'h':
                 help();

@@ -17,6 +17,7 @@
 .PHONY: test
 
 CC      ?=cc
+LDLIBFS +=-lm
 ZDIR    ?=./libs/zlib
 ZLIB=
 
@@ -27,11 +28,11 @@ else
 endif
 
 release: CFLAGS+=-O3
-release: bfqmerge
+release: bfqmerge bfqstats
 
 debug: CFLAGS+=-g3 -Og -Wall -Wextra -Wdouble-promotion -Wno-sign-compare \
 	-fsanitize=address,undefined -fno-omit-frame-pointer
-debug: bfqmerge
+debug: bfqmerge bfqstats
 
 libz/libz.a:
 	(cd $(ZDIR) && ./configure --prefix=./ --static)
@@ -42,20 +43,26 @@ libz: libz/libz.a
 clean/libz:
 	$(MAKE) -C $(ZDIR) clean
 
-clean/bfqmerge:
-	-rm -f src/*.o
+clean/bfq:
+	-rm -f ./src/bfqmerge.o
+	-rm -f ./src/bfqstats.o
 	-rm -f ./bfqmerge
+	-rm -f ./bfqstats
 
-clean: clean/libz clean/bfqmerge
+clean: clean/libz clean/bfq
 
-src/%.o: src/%.c
+src/bfqmerge.o: src/bfqmerge.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-objects := $(patsubst %.c,%.o,$(wildcard src/*.c))
+src/bfqstats.o: src/bfqstats.c
+	$(CC) $(CFLAGS) -c $^ -o $@
 
-bfqmerge: $(objects)
-	$(CC) $(CFLAGS) $(objects) -o $@ $(ZLIB)
+bfqmerge: src/bfqmerge.o
+	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
 
-test: bfqmerge
+bfqstats: src/bfqstats.o
+	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
+
+test: bfqmerge bfqstats
 	(cd ./test && bash test.sh)
 

@@ -1,7 +1,8 @@
 # bfqutils: Ben's FastQ Utilities
 
 * FastQ merging for PE reads: [bfqmerge](#bfqmerge)
-* FastQ trimming for SE reads: [bfqtrimse](#bfqtrimse)
+* FastQ adapter trimming for SE reads: [bfqtrim](#bfqtrim)
+* FastQ statistics: [bfqstats](#bfqstats)
 
 ## Installation
 
@@ -21,13 +22,9 @@ To dynamically link to a system Zlib instead of building a static library:
 make z_dyn=1 release
 ```
 
-## Citation
-
-bfqutils hasn't appeared in any publication, but please do cite this repository if you find this software helpful in your research.
-
 ## bfqmerge
 
-This tool is meant to be used as a drop-in replacement for [`fastp --merge`](https://github.com/OpenGene/fastp?tab=readme-ov-file#merge-paired-end-reads). The only differences from fastp are a smaller default minimum merge length and more aggressive base and quality score correction. (Additionally, bfqmerge seems to properly trim some polyG tails in cases where fastp fails to do so, though I don't quite understand why. Nevertheless, the polyG trimming algorithm isn't perfect and will occasionally fail.) Apart from that, bfqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very good single-thread performance (<15 min on 2x100M PE150 reads).
+This tool is meant to be used as a drop-in replacement for [`fastp --merge`](https://github.com/OpenGene/fastp?tab=readme-ov-file#merge-paired-end-reads). The only differences from fastp are a smaller default minimum merge length (since the original purpose of this was to deal with small RNA-seq data) and more aggressive base and quality score correction. Apart from that, bfqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very good single-thread performance (<15 min on 2x100M PE150 reads).
 
 ### Usage
 
@@ -60,5 +57,30 @@ bfqmerge is a simple program, which performs the following operations:
 
 4. Check if the merged read passes quality filters (`-Q`, `-u`, `-n`). If yes, then compress the output if desired (`-z`), then write to `stdout`.
 
-With the exception of `-o`, all default values are identical to fastp. These generally work quite well, though be aware that it is impossible to get read merging right 100% of the time. False positive merging events and false negative read discards will almost always occur given a sufficiently diverse set of reads.
+With the exception of `-o`, all default values are identical to fastp. These generally work quite well, though be aware that it is impossible to get read merging right 100% of the time. False positive merging events and false negative read discards will almost always occur for any combination of settings given a sufficiently diverse set of reads.
+
+## bfqstats
+
+### Usage
+
+```
+bfqstats v1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
+
+Usage:  bfqstats [options] -i reads.fq[.gz]
+ -i <file>  Input reads. Use '-' for stdin.
+ -l <file>  Read Length histogram.
+ -g <file>  Read GC content histogram.
+ -q <file>  Mean read quality histogram.
+ -Q <file>  Per-position mean quality histogram.
+ -b <file>  Per-position base content histogram.
+ -k <file>  K-mer counts and obs/exp ratios.
+ -o <file>  Send summary stats to a file instead of stderr.
+ -K <int>   K-mer size. Default: 6
+ -n <int>   Only examine this number of reads.
+ -O         Send the reads to stdout.
+ -z         If -O, compress as gzip.
+ -N         Do not print summary stats to stderr.
+ -v         Print the version and exit.
+ -h         Print this help message and exit.
+```
 
