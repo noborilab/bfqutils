@@ -34,7 +34,6 @@
 
 #define DEFAULT_KMER              6
 #define MAX_KMER                 10
-#define DEFAULT_ALLOC           256
 
 #define error(do_exit, msg, ...) do { \
     fprintf(stderr, "[E::%s] " msg "\n", __func__, ##__VA_ARGS__); \
@@ -44,7 +43,6 @@
     } } while (0) 
 #define quit(msg, ...) error(true, msg, ##__VA_ARGS__)
 
-#define max(x, y) ((x) > (y) ? (x) : (y))
 #define min(x, y) ((x) < (y) ? (x) : (y))
 
 KSEQ_INIT(gzFile, gzread)
@@ -145,7 +143,9 @@ static inline void allocMoreStat(stat_t *stat, const int l) {
       stat->d = (int64_t *) realloc(stat->d, sizeof(int64_t) * stat->m);
       if (stat->d == NULL) quit("Out of memory (requested %lu B)", stat->m * sizeof(int64_t));
       stat->l = l;
-      for (size_t i = prev_m; i < stat->m; i++) stat->d[i] = 0;
+      for (size_t i = prev_m; i < stat->m; i++) {
+          stat->d[i] = 0;
+      }
   }
 }
 
@@ -153,12 +153,14 @@ static inline void allocMoreStatf(statf_t *stat, const int l) {
   if ((l + 1) < stat->m) {
       stat->l = l;
   } else {
-      size_t prev_m = stat->m;
+      const size_t prev_m = stat->m;
       while (stat->m < (l + 1)) stat->m *= 2;
       stat->d = (double *) realloc(stat->d, sizeof(double) * stat->m);
       if (stat->d == NULL) quit("Out of memory (requested %lu B)", stat->m * sizeof(double));
       stat->l = l;
-      for (size_t i = prev_m; i < stat->m; i++) stat->d[i] = 0;
+      for (size_t i = prev_m; i < stat->m; i++) {
+          stat->d[i] = 0;
+      }
   }
 }
 
@@ -171,7 +173,7 @@ static FILE *newWriteFile(const char *f) {
 static inline int kmer2int(const unsigned char *seq, const int k, const int offset) {
     int kmer = 0;
     for (unsigned int j = 0, i = k - 1; i < -1; j++, i--) {
-        unsigned char ind = char2index[seq[offset + j]];
+        const unsigned char ind = char2index[seq[offset + j]];
         if (ind == 4) return -1;
         kmer += pow4[i] * ind;
     }
@@ -395,7 +397,7 @@ int main(int argc, char *argv[]) {
                         q30++;
                     }
                 }
-                baseQual = pow(10, ((read->qual.s[i] - 33)/(-10.0)));
+                baseQual = pow(10, ((double) (read->qual.s[i] - 33) / (-10.0)));
                 avgQual += baseQual;
                 ppQualHist->d[i] += baseQual;
                 ppCountHist->d[i]++;
@@ -424,7 +426,7 @@ int main(int argc, char *argv[]) {
                 }
             }
             avgQual /= (double) read->seq.l;
-            readQual = min(94, (int) (log10(avgQual) * -10));
+            readQual = min(94, (int) (log10(avgQual) * -10.0));
             if (readQual + 1 > qualHist->l) allocMoreStat(qualHist, readQual + 1);
             qualHist->d[readQual]++;
         }
@@ -447,10 +449,10 @@ int main(int argc, char *argv[]) {
 
     if (!noStats) {
 
-        int lengthMedian = statMedian(lengthHist, bases);
+        const int lengthMedian = statMedian(lengthHist, bases);
         statf_t *kEnr = initStatf(kCounts->m);
         kEnr->l = kCounts->l;
-        double kExp = (double) nKmers / (double) kCounts->l;
+        const double kExp = (double) nKmers / kCounts->l;
         for (int i = 0; i < kCounts->l; i++) {
             kEnr->d[i] = (double) kCounts->d[i] / kExp;
         }
@@ -459,11 +461,11 @@ int main(int argc, char *argv[]) {
         fprintf(ovStats_f, "Total reads: %'lld\n", nReads);
         fprintf(ovStats_f, "Median length: %d\n", lengthMedian);
         fprintf(ovStats_f, "Base composition:\n A: %.1f%%\n C: %.1f%%\n G: %.1f%%\n T: %.1f%%\n N: %.1f%%\n",
-            100.0 * (double) nA / (double) bases, 100.0 * (double) nC / (double) bases,
-            100.0 * (double) nG / (double) bases, 100.0 * (double) nT / (double) bases,
-            100.0 * (double) nN / (double) bases);
-        fprintf(ovStats_f, "Q20 bases: %.1f%%\n", 100.0 * (double) q20 / (double) bases);
-        fprintf(ovStats_f, "Q30 bases: %.1f%%\n", 100.0 * (double) q30 / (double) bases);
+            100.0 * (double) nA / bases, 100.0 * (double) nC / bases,
+            100.0 * (double) nG / bases, 100.0 * (double) nT / bases,
+            100.0 * (double) nN / bases);
+        fprintf(ovStats_f, "Q20 bases: %.1f%%\n", 100.0 * (double) q20 / bases);
+        fprintf(ovStats_f, "Q30 bases: %.1f%%\n", 100.0 * (double) q30 / bases);
         fprintf(ovStats_f, "Top 10 k-mers:\n");
 
         char kmerStr[MAX_KMER + 1];
@@ -484,7 +486,7 @@ int main(int argc, char *argv[]) {
         if (lengthHist_f != NULL) {
             fprintf(lengthHist_f, "Length\tCount\tFraction\n");
             for (int i = 0; i < lengthHist->l; i++) {
-                fprintf(lengthHist_f, "%d\t%lld\t%f\n", i, lengthHist->d[i], (double) lengthHist->d[i] / (double) bases);
+                fprintf(lengthHist_f, "%d\t%lld\t%f\n", i, lengthHist->d[i], (double) lengthHist->d[i] / bases);
             }
         }
         if (gcHist_f != NULL) {
@@ -505,7 +507,7 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < ppQualHist->l; i++) {
                 qual = ppQualHist->d[i];
                 qual /= (double) ppCountHist->d[i];
-                fprintf(ppQualHist_f, "%d\t%d\n", i + 1, (int) (log10(qual) * -10));
+                fprintf(ppQualHist_f, "%d\t%d\n", i + 1, (int) (log10(qual) * -10.0));
             }
         }
         if (ppBaseHist_f != NULL) {

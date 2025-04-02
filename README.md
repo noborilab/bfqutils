@@ -39,6 +39,8 @@ Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq
  -u <dbl>  Maximum fraction of bases allowed to be low quality. Default: 0.4
  -n <int>  Maximum number of Ns allowed. Default: 5
  -g <int>  Number of Gs to trigger polyG tail trimming. Default: 10
+ -t <int>  Mean window quality threshold for trimming 3-prime bases. Default: 20.
+ -w <int>  Window size of 3-prime base trimming. Default: 5
  -z        Compress the output as gzip.
  -q        Make the program quiet.
  -v        Print the version and exit.
@@ -51,11 +53,13 @@ bfqmerge is a simple program, which performs the following operations:
 
 1. Detect and trim polyG tails (`-g`). Failure to remove these can lead to bfqmerge thinking that sufficiently long stretches of Gs found in both reads of a pair are the overlapping parts of the reads.
 
-2. Find the best overlap, depending on user settings (`-o`, `-d`, `-p`).
+2. Detect and trim low quality bases from the 3' end of the reads (`-t`, `-w`). Again, this helps reduce the possibility of false positive alignments between incorrect read segments, especially when expecting short inserts.
 
-3. If no overlap is found, discard the reads. Otherwise, create a new merged read. For each overlapping position, the base and quality score is taken from whichever of the two reads has a better score in that position.
+3. Find the best overlap, depending on user settings (`-o`, `-d`, `-p`).
 
-4. Check if the merged read passes quality filters (`-Q`, `-u`, `-n`). If yes, then compress the output if desired (`-z`), then write to `stdout`.
+4. If no overlap is found, discard the reads. Otherwise, create a new merged read. For each overlapping position, the base and quality score is taken from whichever of the two reads has a better score in that position.
+
+5. Check if the merged read passes quality filters (`-Q`, `-u`, `-n`). If yes, then compress the output if desired (`-z`), then write to `stdout`.
 
 With the exception of `-o`, all default values are identical to fastp. These generally work quite well, though be aware that it is impossible to get read merging right 100% of the time. False positive merging events and false negative read discards will almost always occur for any combination of settings given a sufficiently diverse set of reads.
 

@@ -25,6 +25,7 @@
 #include <locale.h>
 #include <limits.h>
 #include <errno.h>
+#include <math.h>
 #include "kseq.h"
 #include "zlib.h"
 
@@ -38,6 +39,8 @@
 #define DEFAULT_MAX_NON_QUALIFIED      0.4
 #define DEFAULT_MAX_N_BASES              5
 #define DEFAULT_POLYG_N                 10
+#define DEFAULT_TRIM_QUAL               20
+#define DEFAULT_TRIM_WIN                 5
 
 #define error(do_exit, msg, ...) do { \
     fprintf(stderr, "[E::%s] " msg "\n", __func__, ##__VA_ARGS__); \
@@ -74,6 +77,8 @@ static void help(void) {
         " -u <dbl>  Maximum fraction of bases allowed to be low quality. Default: %.1f\n"
         " -n <int>  Maximum number of Ns allowed. Default: %d\n"
         " -g <int>  Number of Gs to trigger polyG tail trimming. Default: %d\n"
+        " -t <int>  Mean window quality threshold for trimming 3-prime bases. Default: %d.\n"
+        " -w <int>  Window size of 3-prime base trimming. Default: %d\n"
         " -z        Compress the output as gzip.\n"
         " -q        Make the program quiet.\n"
         " -v        Print the version and exit.\n"
@@ -86,6 +91,8 @@ static void help(void) {
         , DEFAULT_MAX_NON_QUALIFIED
         , DEFAULT_MAX_N_BASES
         , DEFAULT_POLYG_N
+        , DEFAULT_TRIM_QUAL
+        , DEFAULT_TRIM_WIN
     );
 }
 
@@ -218,7 +225,33 @@ static inline int trimPolyG(kseq_t *read, const int polyG_n) {
     return (int) read->seq.l;
 }
 
-static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, const int diffLimit, const float diffPercentLimit, const bool gzip, const bool quiet, const char minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n) {
+static inline int trim3p(kseq_t *read, const int trimQ, const int trimW) {
+    double avgQual = 0;
+    int toTrim = -1;
+    if (read->seq.l >= trimW) {
+        for (int i = read->seq.l - trimW; i > -1; i--) {
+            avgQual = 0;
+            for (int j = i; j < i + trimW; j++) {
+                avgQual += pow(10, ((double) (read->qual.s[j] - 33) / (-10.0)));
+            }
+            avgQual /= trimW;
+            if (((int) log10(avgQual) * -10.0) < trimQ) {
+                toTrim = i;
+            } else {
+                break;
+            }
+        }
+        if (toTrim > -1) {
+            read->seq.s[toTrim] = 0;
+            read->qual.s[toTrim] = 0;
+            read->seq.l = toTrim;
+            read->qual.l = toTrim;
+        }
+    }
+    return (int) read->seq.l;
+}
+
+static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, const int diffLimit, const float diffPercentLimit, const bool gzip, const bool quiet, const char minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n, const int trimQ, const int trimW) {
 
     gzFile gz;
     if (gzip) gz = gzdopen(1, "wb");
@@ -250,6 +283,8 @@ static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, 
 
         if (!trimPolyG(fwd_kseq, polyG_n)) continue;
         if (!trimPolyG(rev_kseq, polyG_n)) continue;
+        if (!trim3p(fwd_kseq, trimQ, trimW)) continue;
+        if (!trim3p(rev_kseq, trimQ, trimW)) continue;
 
         // https://github.com/OpenGene/fastp/blob/master/src/overlapanalysis.cpp
         offset = 0;
@@ -307,9 +342,7 @@ finish_merge:;
         }
         if ((lowQualNum > (int) (maxNonQualified * (float) merged_kseq->seq.l)) || (nBaseNum > maxNBases)) {
             filtered_n++;
-            continue;
-        }
-        if (gzip) {
+        } else if (gzip) {
             gzprintf(gz, "@%s %s merged_%d_%d\n%s\n+\n%s\n", merged_kseq->name.s, merged_kseq->comment.s,
                 from_fwd, from_rev, merged_kseq->seq.s, merged_kseq->qual.s);
         } else {
@@ -349,19 +382,26 @@ int main(int argc, char *argv[]) {
     float maxNonQualified = DEFAULT_MAX_NON_QUALIFIED; 
     int maxNBases = DEFAULT_MAX_N_BASES; 
     int polyG_n = DEFAULT_POLYG_N;
+    int trimQ = DEFAULT_TRIM_QUAL;
+    int trimW = DEFAULT_TRIM_WIN;
     bool gzip = false, quiet = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:zqvh")) != -1) {
+    while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:t:w:zqvh")) != -1) {
         switch (opt) {
             case 'o':
                 overlapRequire = atoi(optarg);
+                if (overlapRequire < 1) quit("Error: -o must be a positive integer");
                 break;
             case 'd':
                 diffLimit = atoi(optarg);
+                if (diffLimit < 0) quit("Error: -d must be greater or equal to 0");
                 break;
             case 'p':
                 diffPercentLimit = atof(optarg);
+                if (diffPercentLimit < 0.0f || diffPercentLimit > 1.0f) {
+                    quit("Error: -p must be between 0 and 1");
+                }
                 break;
             case 'Q':
                 minPhredQual = atoi(optarg);
@@ -375,12 +415,36 @@ int main(int argc, char *argv[]) {
                 break;
             case 'u':
                 maxNonQualified = atof(optarg);
+                if (maxNonQualified < 0.0f || maxNonQualified > 1.0f) {
+                    quit("Error: -u must be between 0 and 1");
+                }
                 break;
             case 'n':
                 maxNBases = atoi(optarg);
+                if (maxNBases < 0) {
+                    quit("Error: -n must be greater or equal to 0");
+                }
                 break;
             case 'g':
                 polyG_n = atoi(optarg);
+                if (polyG_n < 0) {
+                    quit("Error: -g must be greater or equal to 0");
+                }
+                break;
+            case 't':
+                trimQ = atoi(optarg);
+                if (trimQ > 127 - 33) {
+                    trimQ = 127 - 33;
+                }
+                if (trimQ < 0) {
+                    trimQ = 0;
+                }
+                break;
+            case 'w':
+                if (trimW < 1) {
+                    quit("Error: -w must be a positive integer");
+                }
+                trimW = atoi(optarg);
                 break;
             case 'z':
                 gzip = true;
@@ -407,7 +471,7 @@ int main(int argc, char *argv[]) {
         quit("Expected two input files, found %d.\n", n_files);
     }
 
-    fqmerge(argv[optind], argv[optind + 1], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n);
+    fqmerge(argv[optind], argv[optind + 1], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW);
 
     return EXIT_SUCCESS;
 
