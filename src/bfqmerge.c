@@ -79,6 +79,7 @@ static void help(void) {
         " -g <int>  Number of Gs to trigger polyG tail trimming. Default: %d\n"
         " -t <int>  Mean window quality threshold for trimming 3-prime bases. Default: %d.\n"
         " -w <int>  Window size of 3-prime base trimming. Default: %d\n"
+        " -m <int>  Max merged read length.\n"
         " -z        Compress the output as gzip.\n"
         " -q        Make the program quiet.\n"
         " -v        Print the version and exit.\n"
@@ -251,12 +252,12 @@ static inline int trim3p(kseq_t *read, const int trimQ, const int trimW) {
     return (int) read->seq.l;
 }
 
-static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, const int diffLimit, const float diffPercentLimit, const bool gzip, const bool quiet, const char minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n, const int trimQ, const int trimW) {
+static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, const int diffLimit, const float diffPercentLimit, const bool gzip, const bool quiet, const char minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n, const int trimQ, const int trimW, const int maxLen) {
 
     gzFile gz;
     if (gzip) gz = gzdopen(1, "wb");
 
-    const int complete_compare_require = 50;
+    const int complete_compare_require = 50;  // overlapDiffLimit only applies in first 50 bp?
     int offset, overlap_len, diff;
 
     gzFile fwd_f = gzopen(fwd, "r"); 
@@ -288,7 +289,7 @@ static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, 
 
         // https://github.com/OpenGene/fastp/blob/master/src/overlapanalysis.cpp
         offset = 0;
-        while (offset < (int) fwd_kseq->seq.l - overlapRequire) {
+        while (offset <= (int) fwd_kseq->seq.l - overlapRequire) {
             overlap_len = min((int) fwd_kseq->seq.l - offset, (int) rev_kseq->seq.l);
             int overlapDiffLimit = min(diffLimit, (int)(overlap_len * diffPercentLimit));
             diff = 0;
@@ -309,7 +310,7 @@ static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, 
         }
 
         offset = 0;
-        while (offset > -((int) rev_kseq->seq.l - overlapRequire)) {
+        while (offset >= -((int) rev_kseq->seq.l - overlapRequire)) {
             overlap_len = min((int) fwd_kseq->seq.l, (int) rev_kseq->seq.l - abs(offset));
             int overlapDiffLimit = min(diffLimit, (int)(overlap_len * diffPercentLimit));
             diff = 0;
@@ -341,7 +342,8 @@ finish_merge:;
           if (dnatable[(unsigned char) merged_kseq->seq.s[i]] == 110) nBaseNum++;
         }
         if ((lowQualNum > (int) (maxNonQualified * (float) merged_kseq->seq.l)) ||
-            (nBaseNum > maxNBases) || (merged_kseq->seq.l < overlapRequire)) {
+            (nBaseNum > maxNBases) || (merged_kseq->seq.l < overlapRequire) ||
+            (maxLen > 0 && merged_kseq->seq.l > maxLen)) {
             filtered_n++;
         } else if (gzip) {
             gzprintf(gz, "@%s %s merged_%d_%d\n%s\n+\n%s\n", merged_kseq->name.s, merged_kseq->comment.s,
@@ -385,12 +387,14 @@ int main(int argc, char *argv[]) {
     int polyG_n = DEFAULT_POLYG_N;
     int trimQ = DEFAULT_TRIM_QUAL;
     int trimW = DEFAULT_TRIM_WIN;
+    int maxLen = 0;
     bool gzip = false, quiet = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:t:w:zqvh")) != -1) {
+    while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:t:w:m:zqvh")) != -1) {
         switch (opt) {
             case 'o':
+                // TODO: is this not doing what I expect? Fastp only outputs reads >15, not >=15
                 overlapRequire = atoi(optarg);
                 if (overlapRequire < 1) quit("Error: -o must be a positive integer");
                 break;
@@ -442,10 +446,16 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 'w':
+                trimW = atoi(optarg);
                 if (trimW < 1) {
                     quit("Error: -w must be a positive integer");
                 }
-                trimW = atoi(optarg);
+                break;
+            case 'm':
+                maxLen = atoi(optarg);
+                if (maxLen < 1) {
+                    quit("Error: -m must be a positive integer");
+                }
                 break;
             case 'z':
                 gzip = true;
@@ -472,7 +482,7 @@ int main(int argc, char *argv[]) {
         quit("Expected two input files, found %d.\n", n_files);
     }
 
-    fqmerge(argv[optind], argv[optind + 1], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW);
+    fqmerge(argv[optind], argv[optind + 1], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW, maxLen);
 
     return EXIT_SUCCESS;
 

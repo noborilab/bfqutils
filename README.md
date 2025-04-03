@@ -1,8 +1,8 @@
 # bfqutils: Ben's FastQ Utilities
 
-* FastQ merging for PE reads: [bfqmerge](#bfqmerge)
-* FastQ adapter trimming for SE reads: [bfqtrim](#bfqtrim)
+* FastQ PE read merging: [bfqmerge](#bfqmerge)
 * FastQ statistics: [bfqstats](#bfqstats)
+* FastQ adapter trimming: [bfqtrim](#bfqtrim)
 
 ## Installation
 
@@ -24,7 +24,7 @@ make z_dyn=1 release
 
 ## bfqmerge
 
-This tool is meant to be used as a drop-in replacement for [`fastp --merge`](https://github.com/OpenGene/fastp?tab=readme-ov-file#merge-paired-end-reads). The only differences from fastp are a smaller default minimum merge length (since the original purpose of this was to deal with small RNA-seq data) and more aggressive base and quality score correction. Apart from that, bfqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very good single-thread performance (<15 min on 2x100M PE150 reads).
+This tool is meant to be used as a drop-in replacement for [`fastp --merge`](https://github.com/OpenGene/fastp?tab=readme-ov-file#merge-paired-end-reads). The only differences from fastp are a smaller default minimum merge length (since this tool is primarily intended for libraries with small inserts) and more aggressive base and quality score correction. Apart from that, bfqmerge is intended to be a lightweight replacement with extremely low memory usage (<2 MB) and very good single-thread performance (<15 min on 2x100M PE150 reads, ~10 min without the `-z` flag). Remember to change the default values in `src/bfqmerge.c` if that would better suit your primary use case!
 
 ### Usage
 
@@ -41,6 +41,7 @@ Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq
  -g <int>  Number of Gs to trigger polyG tail trimming. Default: 10
  -t <int>  Mean window quality threshold for trimming 3-prime bases. Default: 20.
  -w <int>  Window size of 3-prime base trimming. Default: 5
+ -m <int>  Max merged read length.
  -z        Compress the output as gzip.
  -q        Make the program quiet.
  -v        Print the version and exit.
@@ -79,7 +80,7 @@ Usage:  bfqstats [options] -i reads.fq[.gz]
  -b <file>  Per-position base content histogram.
  -k <file>  K-mer counts and obs/exp ratios.
  -o <file>  Send summary stats to a file instead of stderr.
- -K <int>   K-mer size. Default: 6
+ -K <int>   K-mer size for -k. Default: 6
  -n <int>   Only examine this number of reads.
  -O         Send the reads to stdout.
  -z         If -O, compress as gzip.
@@ -87,4 +88,12 @@ Usage:  bfqstats [options] -i reads.fq[.gz]
  -v         Print the version and exit.
  -h         Print this help message and exit.
 ```
+
+## bfqtrim
+
+
+
+### Usage
+
+
 
