@@ -57,6 +57,9 @@ src/bfqmerge.o: src/bfqmerge.c
 src/bfqstats.o: src/bfqstats.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
+src/bfqtrim.o: src/bfqtrim.c
+	$(CC) $(CFLAGS) -c $^ -o $@
+
 bfqmerge: src/bfqmerge.o
 	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
 

@@ -1,5 +1,5 @@
 /*
- *   bfqmerge: FastQ merging tool for PE reads
+ *   bfqmerge: FastQ PE read merging
  *   Copyright (C) 2025  Benjamin Jean-Marie Tremblay
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -70,20 +70,20 @@ static void help(void) {
         "bfqmerge v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
         "\n"
         "Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq\n"
-        " -o <int>  Required overlap for a merge to occur. Default: %d\n"
-        " -d <int>  Maximum number of mismatches between alignments. Default: %d\n"
-        " -p <dbl>  Maximum fraction of mismatches between alignments. Default: %.1f\n"
-        " -Q <int>  Minimum PHRED+33 quality to consider a base high quality. Default: %d\n"
-        " -u <dbl>  Maximum fraction of bases allowed to be low quality. Default: %.1f\n"
-        " -n <int>  Maximum number of Ns allowed. Default: %d\n"
-        " -g <int>  Number of Gs to trigger polyG tail trimming. Default: %d\n"
-        " -t <int>  Mean window quality threshold for trimming 3-prime bases. Default: %d.\n"
-        " -w <int>  Window size of 3-prime base trimming. Default: %d\n"
-        " -m <int>  Max merged read length.\n"
-        " -z        Compress the output as gzip.\n"
-        " -q        Make the program quiet.\n"
-        " -v        Print the version and exit.\n"
-        " -h        Print this help message and exit.\n"
+        " -o <int>   Required overlap for a merge to occur. Default: %d\n"
+        " -d <int>   Maximum number of mismatches between alignments. Default: %d\n"
+        " -p <dbl>   Maximum fraction of mismatches between alignments. Default: %.1f\n"
+        " -Q <int>   Minimum PHRED+33 quality to consider a base high quality. Default: %d\n"
+        " -u <dbl>   Maximum fraction of bases allowed to be low quality. Default: %.1f\n"
+        " -n <int>   Maximum number of Ns allowed. Default: %d\n"
+        " -g <int>   Number of Gs to trigger polyG tail trimming. Default: %d\n"
+        " -t <int>   Mean window quality threshold for trimming 3-prime bases. Default: %d.\n"
+        " -w <int>   Window size of 3-prime base trimming. Default: %d\n"
+        " -m <int>   Max merged read length.\n"
+        " -z         Compress the output as gzip.\n"
+        " -q         Make the program quiet.\n"
+        " -v         Print the version and exit.\n"
+        " -h         Print this help message and exit.\n"
         , BFQMERGE_VERSION, BFQMERGE_YEAR
         , DEFAULT_OVERLAP_REQUIRE
         , DEFAULT_DIFF_LIMIT
@@ -394,7 +394,6 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:t:w:m:zqvh")) != -1) {
         switch (opt) {
             case 'o':
-                // TODO: is this not doing what I expect? Fastp only outputs reads >15, not >=15
                 overlapRequire = atoi(optarg);
                 if (overlapRequire < 1) quit("Error: -o must be a positive integer");
                 break;
