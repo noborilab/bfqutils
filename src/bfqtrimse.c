@@ -318,9 +318,17 @@ int main(int argc, char *argv[]) {
 
     int64_t nReads = 0, nTrimmed = 0;
 
+    gzFile read_f;
+    if (argv[optind][0] == '-' && argv[optind][1] == '\0') {
+        read_f = gzdopen(fileno(stdin), "r");
+    } else {
+        read_f = gzopen(argv[optind], "r");
+        if (read_f == NULL) quit("Failed to open file %s [%s]", argv[optind], strerror(errno));
+    }
+
     gzFile gz;
     if (gzip) gz = gzdopen(1, "wb");
-    gzFile read_f = gzopen(argv[optind], "r"); 
+    /* gzFile read_f = gzopen(argv[optind], "r");  */
     kseq_t *read = kseq_init(read_f);
     int retVal;
 

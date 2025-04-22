@@ -51,8 +51,7 @@ static void help(void) {
     printf(
         "bfqstats v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
         "\n"
-        "Usage:  bfqstats [options] -i reads.fq[.gz]\n"
-        " -i <file>  Input reads. Use '-' for stdin.\n"
+        "Usage:  bfqstats [options] reads.fq[.gz]\n"
         " -l <file>  Read Length histogram.\n"
         " -g <file>  Read GC content histogram.\n"
         " -q <file>  Mean read quality histogram.\n"
@@ -259,16 +258,8 @@ int main(int argc, char *argv[]) {
     char *end = NULL;
 
     int opt;
-    while ((opt = getopt(argc, argv, "i:l:g:q:Q:b:k:o:K:n:OzNvh")) != -1) {
+    while ((opt = getopt(argc, argv, "l:g:q:Q:b:k:o:K:n:OzNvh")) != -1) {
         switch (opt) {
-          case 'i':
-                if (optarg[0] == '-' && optarg[1] == '\0') {
-                    input = gzdopen(fileno(stdin), "r");
-                } else {
-                    input = gzopen(optarg, "r");
-                    if (input == NULL) quit("Failed to open file %s [%s]", optarg, strerror(errno));
-                }
-                break;
             case 'l':
                 noStats = false;
                 lengthHist_f = newWriteFile(optarg);
@@ -335,8 +326,17 @@ int main(int argc, char *argv[]) {
 
     if (!quiet) noStats = false;
 
-    if (input == NULL) {
-        quit("Error: Missing -i");
+    const int n_files = argc - optind;
+    if (!n_files) quit("Missing input files.");
+
+    if (n_files != 1) {
+        quit("Expected one input file, found %d.\n", n_files);
+    }
+    if (argv[optind][0] == '-' && argv[optind][1] == '\0') {
+        input = gzdopen(fileno(stdin), "r");
+    } else {
+        input = gzopen(argv[optind], "r");
+        if (input == NULL) quit("Failed to open file %s [%s]", argv[optind], strerror(errno));
     }
 
     if (!outReads && outReadsAreGz) {
