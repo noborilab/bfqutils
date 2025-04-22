@@ -28,11 +28,11 @@ else
 endif
 
 release: CFLAGS+=-O3
-release: bfqmerge bfqstats
+release: bfqmerge bfqstats bfqtrimse
 
 debug: CFLAGS+=-g3 -Og -Wall -Wextra -Wdouble-promotion -Wno-sign-compare \
 	-fsanitize=address,undefined -fno-omit-frame-pointer
-debug: bfqmerge bfqstats
+debug: bfqmerge bfqstats bfqtrimse
 
 libz/libz.a:
 	(cd $(ZDIR) && ./configure --prefix=./ --static)
@@ -46,8 +46,10 @@ clean/libz:
 clean/bfq:
 	-rm -f ./src/bfqmerge.o
 	-rm -f ./src/bfqstats.o
+	-rm -f ./src/bfqtrimse.o
 	-rm -f ./bfqmerge
 	-rm -f ./bfqstats
+	-rm -f ./bfqtrimse
 
 clean: clean/libz clean/bfq
 
@@ -57,7 +59,7 @@ src/bfqmerge.o: src/bfqmerge.c
 src/bfqstats.o: src/bfqstats.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-src/bfqtrim.o: src/bfqtrim.c
+src/bfqtrimse.o: src/bfqtrimse.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 bfqmerge: src/bfqmerge.o
@@ -66,6 +68,9 @@ bfqmerge: src/bfqmerge.o
 bfqstats: src/bfqstats.o
 	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
 
-test: bfqmerge bfqstats
+bfqtrimse: src/bfqtrimse.o
+	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
+
+test: bfqmerge bfqstats bfqtrimse
 	(cd ./test && bash test.sh)
 

@@ -2,6 +2,7 @@
 
 * FastQ PE read merging: [bfqmerge](#bfqmerge)
 * FastQ statistics: [bfqstats](#bfqstats)
+* FastQ trimming for single-end reads: [bfqtrimse](#bfqtrimse)
 
 ## Installation
 
@@ -86,6 +87,31 @@ Usage:  bfqstats [options] -i reads.fq[.gz]
  -O         Send the reads to stdout.
  -z         If -O, compress as gzip.
  -N         Do not print summary stats to stderr.
+ -v         Print the version and exit.
+ -h         Print this help message and exit.
+```
+
+## bfqtrimse
+
+A simple FastQ trimming and quality filtering tool for single-end reads. The order of operations is similar to bfqmerge, replacing overlap analysis with adapter sequence matching.
+
+### Usage
+
+```
+bfqtrimse v1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
+
+Usage:  bfqtrimse [options] R1.fq[.gz] > trimmed.fq 
+ -a <str>   Adapter sequence for SE trimming. Default: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+ -Q <int>   Minimum PHRED+33 quality to consider a base high quality. Default: 15
+ -u <dbl>   Maximum fraction of bases allowed to be low quality. Default: 0.4
+ -n <int>   Maximum number of Ns allowed. Default: 5
+ -g <int>   Number of Gs to trigger polyG tail trimming. Default: 10
+ -t <int>   Mean window quality threshold for trimming 3-prime bases. Default: 20.
+ -w <int>   Window size of 3-prime base trimming. Default: 5
+ -M <int>   Min trimmed read length. Default: 15
+ -m <int>   Max trimmed read length.
+ -z         Compress the output as gzip.
+ -q         Make the program quiet.
  -v         Print the version and exit.
  -h         Print this help message and exit.
 ```
