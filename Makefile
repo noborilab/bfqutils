@@ -17,7 +17,7 @@
 .PHONY: test
 
 CC      ?=cc
-LDLIBFS +=-lm
+LDLIBS  +=-lm
 ZDIR    ?=./libs/zlib
 ZLIB=
 
@@ -63,13 +63,13 @@ src/bfqtrimse.o: src/bfqtrimse.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 bfqmerge: src/bfqmerge.o
-	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
+	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
 
 bfqstats: src/bfqstats.o
-	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
+	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
 
 bfqtrimse: src/bfqtrimse.o
-	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB)
+	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
 
 test: bfqmerge bfqstats bfqtrimse
 	(cd ./test && bash test.sh)
