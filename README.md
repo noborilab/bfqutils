@@ -73,8 +73,8 @@ A simple FastQ trimming and quality filtering tool for single-end reads. The ord
 ```
 bfqtrimse v1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
 
-Usage:  bfqtrimse [options] R1.fq[.gz] > trimmed.fq 
- -a <str>   Adapter sequence for SE trimming. Default: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+Usage:  bfqtrimse [options] reads.fq[.gz] > trimmed.fq
+ -a <str>   Adapter sequence. Default: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
  -Q <int>   Minimum PHRED+33 quality to consider a base high quality. Default: 15
  -u <dbl>   Maximum fraction of bases allowed to be low quality. Default: 0.4
  -n <int>   Maximum number of Ns allowed. Default: 5

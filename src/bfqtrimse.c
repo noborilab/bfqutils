@@ -59,8 +59,8 @@ static void help(void) {
     printf(
         "bfqtrimse v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
         "\n"
-        "Usage:  bfqtrimse [options] R1.fq[.gz] > trimmed.fq \n"
-        " -a <str>   Adapter sequence for SE trimming. Default: %s\n"
+        "Usage:  bfqtrimse [options] reads.fq[.gz] > trimmed.fq \n"
+        " -a <str>   Adapter sequence. Default: %s\n"
         " -Q <int>   Minimum PHRED+33 quality to consider a base high quality. Default: %d\n"
         " -u <dbl>   Maximum fraction of bases allowed to be low quality. Default: %.1f\n"
         " -n <int>   Maximum number of Ns allowed. Default: %d\n"
@@ -84,25 +84,6 @@ static void help(void) {
         , DEFAULT_MIN_LEN
     );
 }
-
-static const unsigned char dnatable[256] = {
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110,  65, 110,  67, 110, 110, 110,  71, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110,  84, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110,  65, 110,  67, 110, 110, 110,  71, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110,  84, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110,
-    110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110, 110
-};
 
 static inline int trimPolyG(kseq_t *read, const int polyG_n) {
     // https://github.com/OpenGene/fastp/blob/master/src/polyx.cpp
@@ -328,7 +309,6 @@ int main(int argc, char *argv[]) {
 
     gzFile gz;
     if (gzip) gz = gzdopen(1, "wb");
-    /* gzFile read_f = gzopen(argv[optind], "r");  */
     kseq_t *read = kseq_init(read_f);
     int retVal;
 
@@ -340,7 +320,7 @@ int main(int argc, char *argv[]) {
         int lowQualNum = 0, nBaseNum = 0;
         for (int i = 0; i < (int) read->qual.l; i++) {
           if (read->qual.s[i] < minPhredQual) lowQualNum++;
-          if (dnatable[(unsigned char) read->seq.s[i]] == 110) nBaseNum++;
+          if (read->seq.s[i] == 'N') nBaseNum++;
         }
         if ((lowQualNum > (int) (maxNonQualified * (float) read->seq.l)) ||
             (nBaseNum > maxNBases) || (read->seq.l < minLen) ||

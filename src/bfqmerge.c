@@ -339,7 +339,7 @@ finish_merge:;
         int lowQualNum = 0, nBaseNum = 0;
         for (int i = 0; i < merged_kseq->qual.l; i++) {
           if (merged_kseq->qual.s[i] < minPhredQual) lowQualNum++;
-          if (dnatable[(unsigned char) merged_kseq->seq.s[i]] == 110) nBaseNum++;
+          if (merged_kseq->seq.s[i] == 'N') nBaseNum++;
         }
         if ((lowQualNum > (int) (maxNonQualified * (float) merged_kseq->seq.l)) ||
             (nBaseNum > maxNBases) || (merged_kseq->seq.l < overlapRequire) ||
