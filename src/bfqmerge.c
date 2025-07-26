@@ -29,7 +29,7 @@
 #include "kseq.h"
 #include "zlib.h"
 
-#define BFQMERGE_VERSION             "1.0"
+#define BFQMERGE_VERSION             "1.1"
 #define BFQMERGE_YEAR               "2025"
 
 #define DEFAULT_OVERLAP_REQUIRE         15
@@ -134,6 +134,18 @@ static const unsigned char rctable[256] = {
     78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78,
     78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78
 };
+
+static int str_split(char *str, char **res, const char sep, const int max_size) {
+  const char delim[2] = { sep, '\0' };
+  int field_n = 0;
+  if (strlen(str) == 0) return 0;
+  res[field_n++] = strtok(str, delim);
+  while (field_n < max_size && res[field_n - 1] != NULL) {
+    res[field_n++] = strtok(NULL, delim);
+  }
+  if (field_n == max_size && res[field_n - 1] != NULL) return -1;
+  return field_n - 1;
+}
 
 static kstring_t *kstring_init(void) {
     kstring_t *read = alloc(sizeof(kstring_t));
@@ -256,6 +268,7 @@ static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, 
 
     gzFile gz;
     if (gzip) gz = gzdopen(1, "wb");
+    /* if (gzip && append) gz = gzdopen(1, "ab"); */
 
     const int complete_compare_require = 50;  // overlapDiffLimit only applies in first 50 bp?
     int offset, overlap_len, diff;
@@ -481,7 +494,19 @@ int main(int argc, char *argv[]) {
         quit("Expected two input files, found %d.\n", n_files);
     }
 
-    fqmerge(argv[optind], argv[optind + 1], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW, maxLen);
+    char *fwd_f[1024];
+    char *rev_f[1024];
+    const int n_fwd = str_split(argv[optind], fwd_f, ',', 1024);
+    const int n_rev = str_split(argv[optind + 1], rev_f, ',', 1024);
+
+    if (n_fwd != n_rev) {
+        fprintf(stderr, "Error: found %d R1 files and %d R2 files.\n", n_fwd, n_rev);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < n_fwd; i++) {
+        fqmerge(fwd_f[i], rev_f[i], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW, maxLen);
+    }
 
     return EXIT_SUCCESS;
 
