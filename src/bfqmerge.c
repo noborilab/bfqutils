@@ -29,7 +29,7 @@
 #include "kseq.h"
 #include "zlib.h"
 
-#define BFQMERGE_VERSION             "1.1"
+#define BFQMERGE_VERSION             "1.2"
 #define BFQMERGE_YEAR               "2025"
 
 #define DEFAULT_OVERLAP_REQUIRE         15
@@ -264,11 +264,7 @@ static inline int trim3p(kseq_t *read, const int trimQ, const int trimW) {
     return (int) read->seq.l;
 }
 
-static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, const int diffLimit, const float diffPercentLimit, const bool gzip, const bool quiet, const char minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n, const int trimQ, const int trimW, const int maxLen) {
-
-    gzFile gz;
-    if (gzip) gz = gzdopen(1, "wb");
-    /* if (gzip && append) gz = gzdopen(1, "ab"); */
+static void fqmerge(const char *fwd, const char *rev, const int overlapRequire, const int diffLimit, const float diffPercentLimit, const bool gzip, const bool quiet, const char minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n, const int trimQ, const int trimW, const int maxLen, gzFile gz) {
 
     const int complete_compare_require = 50;  // overlapDiffLimit only applies in first 50 bp?
     int offset, overlap_len, diff;
@@ -374,8 +370,6 @@ finish_merge:;
 
     gzclose(fwd_f);
     gzclose(rev_f);
-
-    if (gzip) gzclose(gz);
 
     if (!quiet) {
         fprintf(stderr, "Processed %'lld read pairs\n", reads_n);
@@ -504,9 +498,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    gzFile gz;
+    if (gzip) gz = gzdopen(1, "wb");
+
     for (int i = 0; i < n_fwd; i++) {
-        fqmerge(fwd_f[i], rev_f[i], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW, maxLen);
+        fqmerge(fwd_f[i], rev_f[i], overlapRequire, diffLimit, diffPercentLimit, gzip, quiet, (char) minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW, maxLen, gz);
     }
+
+    if (gzip) gzclose(gz);
 
     return EXIT_SUCCESS;
 
