@@ -1,8 +1,10 @@
 # bfqutils: Ben's FastQ Utilities
 
-* FastQ PE read merging: [bfqmerge](#bfqmerge)
-* FastQ trimming for single-end reads: [bfqtrimse](#bfqtrimse)
-* FastQ statistics: [bfqstats](#bfqstats)
+A set of utilties available as subcommands within a single program, `bfqutils`.
+
+* FastQ PE read merging: [bfqutils merge](#bfqmerge)
+* FastQ trimming for single-end reads: [bfqutils trimse](#bfqtrimse)
+* FastQ statistics: [bfqutils stats](#bfqstats)
 
 ## Installation
 
@@ -29,9 +31,8 @@ This tool is meant to be used as a drop-in replacement for [`fastp --merge`](htt
 ### Usage
 
 ```
-bfqmerge v1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
-
-Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq
+bfqutils v1.1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
+Usage:  bfqutils merge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq
  -o <int>  Required overlap for a merge to occur. Default: 15
  -d <int>  Maximum number of mismatches between alignments. Default: 5
  -p <dbl>  Maximum fraction of mismatches between alignments. Default: 0.2
@@ -71,9 +72,8 @@ A simple FastQ trimming and quality filtering tool for single-end reads. The ord
 ### Usage
 
 ```
-bfqtrimse v1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
-
-Usage:  bfqtrimse [options] reads.fq[.gz] > trimmed.fq
+bfqutils v1.1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
+Usage:  bfqutils trimse [options] reads.fq[.gz] > trimmed.fq
  -a <str>   Adapter sequence. Default: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
  -Q <int>   Minimum PHRED+33 quality to consider a base high quality. Default: 15
  -u <dbl>   Maximum fraction of bases allowed to be low quality. Default: 0.4
@@ -96,9 +96,8 @@ Meant to be used in a pipe with bfqmerge or bfqtrimse. The default top enriched 
 ### Usage
 
 ```
-bfqstats v1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
-
-Usage:  bfqstats [options] reads.fq[.gz]
+bfqutils v1.1.0  Copyright (C) 2025  Benjamin Jean-Marie Tremblay
+Usage:  bfqutils stats [options] reads.fq[.gz]
  -l <file>  Read Length histogram.
  -g <file>  Read GC content histogram.
  -q <file>  Mean read quality histogram.

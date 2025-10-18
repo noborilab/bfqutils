@@ -1,5 +1,5 @@
 /*
- *   bfqtrimse: FastQ adapter trimming for single-end reads
+ *   bfqutils trimse: FastQ adapter trimming for single-end reads
  *   Copyright (C) 2025  Benjamin Jean-Marie Tremblay
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,7 @@
 #include <math.h>
 #include "kseq.h"
 #include "zlib.h"
-
-#define BFQTRIMSE_VERSION             "1.0"
-#define BFQTRIMSE_YEAR               "2025"
+#include "version.h"
 
 #define DEFAULT_MIN_PHRED_QUAL          15
 #define DEFAULT_MAX_NON_QUALIFIED      0.4
@@ -45,7 +43,7 @@
 #define error(do_exit, msg, ...) do { \
     fprintf(stderr, "[E::%s] " msg "\n", __func__, ##__VA_ARGS__); \
     if (do_exit) { \
-      fputs("Encountered fatal error, exiting. Run bfqtrimse -h for usage.\n", stderr); \
+      fputs("Encountered fatal error, exiting. Run bfqutils trimse -h for usage.\n", stderr); \
       exit(EXIT_FAILURE); \
     } } while (0) 
 #define quit(msg, ...) error(true, msg, ##__VA_ARGS__)
@@ -57,9 +55,8 @@ KSEQ_INIT(gzFile, gzread)
 
 static void help(void) {
     printf(
-        "bfqtrimse v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
-        "\n"
-        "Usage:  bfqtrimse [options] reads.fq[.gz] > trimmed.fq \n"
+        "bfqutils v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
+        "Usage:  bfqutils trimse [options] reads.fq[.gz] > trimmed.fq\n"
         " -a <str>   Adapter sequence. Default: %s\n"
         " -Q <int>   Minimum PHRED+33 quality to consider a base high quality. Default: %d\n"
         " -u <dbl>   Maximum fraction of bases allowed to be low quality. Default: %.1f\n"
@@ -73,7 +70,7 @@ static void help(void) {
         " -q         Make the program quiet.\n"
         " -v         Print the version and exit.\n"
         " -h         Print this help message and exit.\n"
-        , BFQTRIMSE_VERSION, BFQTRIMSE_YEAR
+        , BFQUTILS_VERSION, BFQUTILS_YEAR
         , DEFAULT_ADP
         , DEFAULT_MIN_PHRED_QUAL
         , DEFAULT_MAX_NON_QUALIFIED
@@ -184,7 +181,7 @@ static inline int trim_read(kseq_t *read, const char *adp, const int alen, const
 
 }
 
-int main(int argc, char *argv[]) {
+int main_trimse(int argc, char *argv[]) {
 
     setlocale(LC_NUMERIC, "en_US.UTF-8");  // For thousandths sep
 
@@ -266,13 +263,13 @@ int main(int argc, char *argv[]) {
                 quiet = true;
                 break;
             case 'v':
-                printf("bfqtrimse v%s\n", BFQTRIMSE_VERSION);
+                printf("bfqutils v%s\n", BFQUTILS_VERSION);
                 exit(EXIT_SUCCESS);
             case 'h':
                 help();
                 exit(EXIT_SUCCESS);
             default:
-                fputs("Encountered fatal error, exiting. Run bfqtrimse -h for usage.\n", stderr);
+                fputs("Encountered fatal error, exiting. Run bfqutils trimse -h for usage.\n", stderr);
                 exit(EXIT_FAILURE);
         }
     }

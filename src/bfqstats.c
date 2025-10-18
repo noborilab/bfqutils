@@ -1,5 +1,5 @@
 /*
- *   bfqstats: FastQ statistics
+ *   bfqutils stats: FastQ statistics
  *   Copyright (C) 2025  Benjamin Jean-Marie Tremblay
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,7 @@
 #include <math.h>
 #include "kseq.h"
 #include "zlib.h"
-
-#define BFQSTATS_VERSION      "1.0"
-#define BFQSTATS_YEAR        "2025"
+#include "version.h"
 
 #define DEFAULT_KMER              6
 #define MAX_KMER                 10
@@ -38,7 +36,7 @@
 #define error(do_exit, msg, ...) do { \
     fprintf(stderr, "[E::%s] " msg "\n", __func__, ##__VA_ARGS__); \
     if (do_exit) { \
-      fputs("Encountered fatal error, exiting. Run bfqstats -h for usage.\n", stderr); \
+      fputs("Encountered fatal error, exiting. Run bfqutils stats -h for usage.\n", stderr); \
       exit(EXIT_FAILURE); \
     } } while (0) 
 #define quit(msg, ...) error(true, msg, ##__VA_ARGS__)
@@ -49,9 +47,8 @@ KSEQ_INIT(gzFile, gzread)
 
 static void help(void) {
     printf(
-        "bfqstats v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
-        "\n"
-        "Usage:  bfqstats [options] reads.fq[.gz]\n"
+        "bfqutils v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
+        "Usage:  bfqutils stats [options] reads.fq[.gz]\n"
         " -l <file>  Read Length histogram.\n"
         " -g <file>  Read GC content histogram.\n"
         " -q <file>  Mean read quality histogram.\n"
@@ -66,7 +63,7 @@ static void help(void) {
         " -N         Do not print summary stats to stderr.\n"
         " -v         Print the version and exit.\n"
         " -h         Print this help message and exit.\n"
-        , BFQSTATS_VERSION, BFQSTATS_YEAR
+        , BFQUTILS_VERSION, BFQUTILS_YEAR
         , DEFAULT_KMER
     );
 }
@@ -239,7 +236,7 @@ static int calcGC(const char *seq, const int l) {
     return (int) round(100.0 * gc / l);
 }
 
-int main(int argc, char *argv[]) {
+int main_stats(int argc, char *argv[]) {
     
     setlocale(LC_NUMERIC, "en_US.UTF-8");  // For thousandths sep
 
@@ -309,13 +306,13 @@ int main(int argc, char *argv[]) {
                 quiet = true;
                 break;
             case 'v':
-                printf("bfqstats v%s\n", BFQSTATS_VERSION);
+                printf("bfqutils v%s\n", BFQUTILS_VERSION);
                 exit(EXIT_SUCCESS);
             case 'h':
                 help();
                 exit(EXIT_SUCCESS);
             default:
-                fputs("Encountered fatal error, exiting. Run bfqstats -h for usage.\n", stderr);
+                fputs("Encountered fatal error, exiting. Run bfqutils stats -h for usage.\n", stderr);
                 exit(EXIT_FAILURE);
         }
     }

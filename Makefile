@@ -17,9 +17,13 @@
 .PHONY: test
 
 CC      ?=cc
+CFLAGS  +=-std=gnu99
+LDFLAGS +=-std=gnu99
 LDLIBS  +=-lm
 ZDIR    ?=./libs/zlib
 ZLIB=
+PREFIX  ?=/usr/local
+BINDIR  ?=bin
 
 ifeq ($(z_dyn),)
 	ZLIB=$(ZDIR)/libz.a
@@ -28,11 +32,13 @@ else
 endif
 
 release: CFLAGS+=-O3
-release: bfqmerge bfqstats bfqtrimse
+release: LDFLAGS+=-O3
+release: bfqutils
 
 debug: CFLAGS+=-g3 -Og -Wall -Wextra -Wdouble-promotion -Wno-sign-compare \
 	-fsanitize=address,undefined -fno-omit-frame-pointer
-debug: bfqmerge bfqstats bfqtrimse
+debug: LDFLAGS+=-g3 -Og -fsanitize=address,undefined
+debug: bfqutils
 
 libz/libz.a:
 	(cd $(ZDIR) && ./configure --prefix=./ --static)
@@ -44,12 +50,8 @@ clean/libz:
 	$(MAKE) -C $(ZDIR) clean
 
 clean/bfq:
-	-rm -f ./src/bfqmerge.o
-	-rm -f ./src/bfqstats.o
-	-rm -f ./src/bfqtrimse.o
-	-rm -f ./bfqmerge
-	-rm -f ./bfqstats
-	-rm -f ./bfqtrimse
+	-rm -f ./src/*.o
+	-rm -f ./bfqutils
 
 clean: clean/libz clean/bfq
 
@@ -62,15 +64,18 @@ src/bfqstats.o: src/bfqstats.c
 src/bfqtrimse.o: src/bfqtrimse.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-bfqmerge: src/bfqmerge.o
-	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
+src/bfqutils.o: src/bfqutils.c
+	$(CC) $(CFLAGS) -c $^ -o $@
 
-bfqstats: src/bfqstats.o
-	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
+bfqutils: src/bfqmerge.o src/bfqstats.o src/bfqtrimse.o src/bfqutils.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
 
-bfqtrimse: src/bfqtrimse.o
-	$(CC) $(CFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
-
-test: bfqmerge bfqstats bfqtrimse
+test: bfqutils
 	(cd ./test && bash test.sh)
+
+install: bfqutils
+	install -p ./bfqutils $(PREFIX)/$(BINDIR)
+
+uninstall:
+	-rm -f $(PREFIX)/$(BINDIR)/bfqutils
 

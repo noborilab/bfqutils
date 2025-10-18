@@ -1,5 +1,5 @@
 /*
- *   bfqmerge: FastQ PE read merging
+ *   bfqutils merge: FastQ PE read merging
  *   Copyright (C) 2025  Benjamin Jean-Marie Tremblay
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,7 @@
 #include <math.h>
 #include "kseq.h"
 #include "zlib.h"
-
-#define BFQMERGE_VERSION             "1.2"
-#define BFQMERGE_YEAR               "2025"
+#include "version.h"
 
 #define DEFAULT_OVERLAP_REQUIRE         15
 #define DEFAULT_DIFF_LIMIT               5
@@ -45,7 +43,7 @@
 #define error(do_exit, msg, ...) do { \
     fprintf(stderr, "[E::%s] " msg "\n", __func__, ##__VA_ARGS__); \
     if (do_exit) { \
-      fputs("Encountered fatal error, exiting. Run bfqmerge -h for usage.\n", stderr); \
+      fputs("Encountered fatal error, exiting. Run bfqutils merge -h for usage.\n", stderr); \
       exit(EXIT_FAILURE); \
     } } while (0) 
 #define quit(msg, ...) error(true, msg, ##__VA_ARGS__)
@@ -67,9 +65,8 @@ static inline void *calloc_or_die(size_t size, const char *func_name) {
 
 static void help(void) {
     printf(
-        "bfqmerge v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
-        "\n"
-        "Usage:  bfqmerge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq\n"
+        "bfqutils v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
+        "Usage:  bfqutils merge [options] R1.fq[.gz] R2.fq[.gz] > merged.fq\n"
         " -o <int>   Required overlap for a merge to occur. Default: %d\n"
         " -d <int>   Maximum number of mismatches between alignments. Default: %d\n"
         " -p <dbl>   Maximum fraction of mismatches between alignments. Default: %.1f\n"
@@ -84,7 +81,7 @@ static void help(void) {
         " -q         Make the program quiet.\n"
         " -v         Print the version and exit.\n"
         " -h         Print this help message and exit.\n"
-        , BFQMERGE_VERSION, BFQMERGE_YEAR
+        , BFQUTILS_VERSION, BFQUTILS_YEAR
         , DEFAULT_OVERLAP_REQUIRE
         , DEFAULT_DIFF_LIMIT
         , DEFAULT_DIFF_PERCENT_LIMIT
@@ -381,7 +378,7 @@ finish_merge:;
 
 }
 
-int main(int argc, char *argv[]) {
+int main_merge(int argc, char *argv[]) {
 
     setlocale(LC_NUMERIC, "en_US.UTF-8");  // For thousandths sep
 
@@ -470,13 +467,13 @@ int main(int argc, char *argv[]) {
                 quiet = true;
                 break;
             case 'v':
-                printf("bfqmerge v%s\n", BFQMERGE_VERSION);
+                printf("bfqutils v%s\n", BFQUTILS_VERSION);
                 exit(EXIT_SUCCESS);
             case 'h':
                 help();
                 exit(EXIT_SUCCESS);
             default:
-                fputs("Encountered fatal error, exiting. Run bfqmerge -h for usage.\n", stderr);
+                fputs("Encountered fatal error, exiting. Run bfqutils merge -h for usage.\n", stderr);
                 exit(EXIT_FAILURE);
         }
     }
