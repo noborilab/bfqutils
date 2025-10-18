@@ -2,7 +2,7 @@
 
 echo "Running test of bfqmerge output."
 
-if ! ../bfqmerge -q testR1.fq.gz testR2.fq.gz > test.fq ; then
+if ! ../bfqutils merge -q testR1.fq.gz testR2.fq.gz > test.fq ; then
     echo "Test failed, bfqmerge encountered an error."
     exit 1
 fi
@@ -21,7 +21,7 @@ fi
 
 echo "Running test of bfqtrimse output."
 
-if ! ../bfqtrimse -q testR1.fq.gz > test.fq ; then
+if ! ../bfqutils trimse -q testR1.fq.gz > test.fq ; then
     echo "Test failed, bfqtrimse encountered an error."
     exit 1
 fi
