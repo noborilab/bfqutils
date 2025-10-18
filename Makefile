@@ -1,4 +1,4 @@
-#   fqmerge: FastQ merging tool for PE reads
+#   bfqutils: Ben's FastQ Utilities
 #   Copyright (C) 2025  Benjamin Jean-Marie Tremblay
 #
 #   This program is free software: you can redistribute it and/or modify
