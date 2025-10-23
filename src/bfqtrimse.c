@@ -82,6 +82,18 @@ static void help(void) {
     );
 }
 
+static int str_split(char *str, char **res, const char sep, const int max_size) {
+  const char delim[2] = { sep, '\0' };
+  int field_n = 0;
+  if (strlen(str) == 0) return 0;
+  res[field_n++] = strtok(str, delim);
+  while (field_n < max_size && res[field_n - 1] != NULL) {
+    res[field_n++] = strtok(NULL, delim);
+  }
+  if (field_n == max_size && res[field_n - 1] != NULL) return -1;
+  return field_n - 1;
+}
+
 static inline int trimPolyG(kseq_t *read, const int polyG_n) {
     // https://github.com/OpenGene/fastp/blob/master/src/polyx.cpp
     const int allowOneMismatchForEach = 8;
@@ -181,6 +193,70 @@ static inline int trim_read(kseq_t *read, const char *adp, const int alen, const
 
 }
 
+static void fqtrimse(const char *reads, const char *adp, const int minPhredQual, const float maxNonQualified, const int maxNBases, const int polyG_n, const int trimQ, const int trimW, const int maxLen, const int minLen, const bool gzip, const bool quiet, gzFile gz) {
+
+    const int alen = strlen(adp);
+    int cstart = 0;
+    if (alen >= 16) {
+        cstart = -4;
+    } else if (alen >= 12) {
+        cstart = -3;
+    } else if (alen >= 8) {
+        cstart = -2;
+    }
+    if (alen < 4) {
+        quit("Error: Adapter sequence should be at least 4 bases long.");
+    }
+
+    int64_t nReads = 0, nTrimmed = 0;
+
+    gzFile read_f;
+    if (reads[0] == '-' && reads[1] == '\0') {
+        read_f = gzdopen(fileno(stdin), "r");
+    } else {
+        read_f = gzopen(reads, "r");
+        if (read_f == NULL) quit("Failed to open file %s [%s]", reads, strerror(errno));
+    }
+
+    kseq_t *read = kseq_init(read_f);
+    int retVal;
+
+    while ((retVal = kseq_read(read)) >= 0) {
+        nReads++;
+        if (!trim3p(read, trimQ, trimW)) continue;
+        if (!trimPolyG(read, polyG_n)) continue;
+        if (!trim_read(read, adp, alen, cstart)) continue;
+        int lowQualNum = 0, nBaseNum = 0;
+        for (int i = 0; i < (int) read->qual.l; i++) {
+          if (read->qual.s[i] < minPhredQual) lowQualNum++;
+          if (read->seq.s[i] == 'N') nBaseNum++;
+        }
+        if ((lowQualNum > (int) (maxNonQualified * (float) read->seq.l)) ||
+            (nBaseNum > maxNBases) || (read->seq.l < minLen) ||
+            (maxLen > 0 && read->seq.l > maxLen)) {
+            continue;
+        } else if (gzip) {
+            gzprintf(gz, "@%s %s\n%s\n+\n%s\n", read->name.s,
+                read->comment.l ? read->comment.s : "",
+                read->seq.s, read->qual.s);
+        } else {
+            printf("@%s %s\n%s\n+\n%s\n", read->name.s,
+                read->comment.l ? read->comment.s : "",
+                read->seq.s, read->qual.s);
+        }
+        nTrimmed++;
+    }
+
+    kseq_destroy(read);
+    gzclose(read_f);
+
+    if (!quiet) {
+        fprintf(stderr, "Processed %'lld reads\n", nReads);
+        fprintf(stderr, "Output %'lld trimmed reads (%.2f%%)\n",
+            nTrimmed, 100 * (double) nTrimmed / (double) nReads);
+    }
+}
+
 int main_trimse(int argc, char *argv[]) {
 
     setlocale(LC_NUMERIC, "en_US.UTF-8");  // For thousandths sep
@@ -278,72 +354,23 @@ int main_trimse(int argc, char *argv[]) {
     if (!n_files) quit("Missing input files.");
 
     if (n_files != 1) {
-        quit("Expected one input file, found %d.\n", n_files);
+        quit("Expected one input file (or many separated by commas), found %d.\n", n_files);
     }
 
-    const int alen = strlen(adp);
-    int cstart = 0;
-    if (alen >= 16) {
-        cstart = -4;
-    } else if (alen >= 12) {
-        cstart = -3;
-    } else if (alen >= 8) {
-        cstart = -2;
-    }
-    if (alen < 4) {
-        quit("Error: Adapter sequence should be at least 4 bases long.");
-    }
-
-    int64_t nReads = 0, nTrimmed = 0;
-
-    gzFile read_f;
-    if (argv[optind][0] == '-' && argv[optind][1] == '\0') {
-        read_f = gzdopen(fileno(stdin), "r");
-    } else {
-        read_f = gzopen(argv[optind], "r");
-        if (read_f == NULL) quit("Failed to open file %s [%s]", argv[optind], strerror(errno));
-    }
+    char *reads[1024];
+    const int n_reads = str_split(argv[optind], reads, ',', 1024);
 
     gzFile gz;
     if (gzip) gz = gzdopen(1, "wb");
-    kseq_t *read = kseq_init(read_f);
-    int retVal;
 
-    while ((retVal = kseq_read(read)) >= 0) {
-        nReads++;
-        if (!trim3p(read, trimQ, trimW)) continue;
-        if (!trimPolyG(read, polyG_n)) continue;
-        if (!trim_read(read, adp, alen, cstart)) continue;
-        int lowQualNum = 0, nBaseNum = 0;
-        for (int i = 0; i < (int) read->qual.l; i++) {
-          if (read->qual.s[i] < minPhredQual) lowQualNum++;
-          if (read->seq.s[i] == 'N') nBaseNum++;
+    for (int i = 0; i < n_reads; i++) {
+        if (i > 0 && (reads[i][0] == '-' && reads[i][1] == '\0')) {
+            quit("Error: stdin is not available when multiple input files are used.");
         }
-        if ((lowQualNum > (int) (maxNonQualified * (float) read->seq.l)) ||
-            (nBaseNum > maxNBases) || (read->seq.l < minLen) ||
-            (maxLen > 0 && read->seq.l > maxLen)) {
-            continue;
-        } else if (gzip) {
-            gzprintf(gz, "@%s %s\n%s\n+\n%s\n", read->name.s,
-                read->comment.l ? read->comment.s : "",
-                read->seq.s, read->qual.s);
-        } else {
-            printf("@%s %s\n%s\n+\n%s\n", read->name.s,
-                read->comment.l ? read->comment.s : "",
-                read->seq.s, read->qual.s);
-        }
-        nTrimmed++;
+        fqtrimse(reads[i], adp, minPhredQual, maxNonQualified, maxNBases, polyG_n, trimQ, trimW, maxLen, minLen, gzip, quiet, gz);
     }
 
-    kseq_destroy(read);
-    gzclose(read_f);
     if (gzip) gzclose(gz);
-
-    if (!quiet) {
-        fprintf(stderr, "Processed %'lld reads\n", nReads);
-        fprintf(stderr, "Output %'lld trimmed reads (%.2f%%)\n",
-            nTrimmed, 100 * (double) nTrimmed / (double) nReads);
-    }
 
     return EXIT_SUCCESS;
 
