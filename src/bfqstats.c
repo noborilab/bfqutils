@@ -191,12 +191,12 @@ static void int2kmer(const int ind, const int k, char *kmer) {
     }
 }
 
-static int statMedian(const stat_t *stat, const int64_t total) {
-    const int64_t medVal = total / 2;
+static int statMedian(const stat_t *stat, const int64_t total_reads) {
+    const int64_t medVal = (total_reads + 1) / 2;
     int64_t rtotal = 0;
     for (int i = 0; i < stat->l; i++) {
-        rtotal += stat->d[i] * (int64_t) (i + 1); 
-        if (rtotal > medVal) return i + 1;
+        rtotal += stat->d[i];
+        if (rtotal >= medVal) return i;
     }
     return -1;
 }
@@ -318,7 +318,7 @@ int main_stats(int argc, char *argv[]) {
     }
 
     if (ovStats_f == NULL) {
-        ovStats_f = fopen("/dev/stdout", "w");
+        ovStats_f = stderr;
     }
 
     if (!quiet) noStats = false;
@@ -337,7 +337,7 @@ int main_stats(int argc, char *argv[]) {
     }
 
     if (!outReads && outReadsAreGz) {
-        quit("Error: -z cannot be used in absence of -o");
+        quit("Error: -z cannot be used in absence of -O");
     }
 
     stat_t *lengthHist = initStat(256);
@@ -446,7 +446,7 @@ int main_stats(int argc, char *argv[]) {
 
     if (!noStats) {
 
-        const int lengthMedian = statMedian(lengthHist, bases);
+        const int lengthMedian = statMedian(lengthHist, nReads);
         statf_t *kEnr = initStatf(kCounts->m);
         kEnr->l = kCounts->l;
         const double kExp = (double) nKmers / kCounts->l;
@@ -517,18 +517,20 @@ int main_stats(int argc, char *argv[]) {
 
     }
 
-    fclose(ovStats_f);
-    fclose(lengthHist_f);
-    fclose(gcHist_f);
-    fclose(qualHist_f);
-    fclose(ppQualHist_f);
-    fclose(ppBaseHist_f);
-    fclose(kCounts_f);
+    if (ovStats_f != stderr) fclose(ovStats_f);
+    if (lengthHist_f) fclose(lengthHist_f);
+    if (gcHist_f) fclose(gcHist_f);
+    if (qualHist_f) fclose(qualHist_f);
+    if (ppQualHist_f) fclose(ppQualHist_f);
+    if (ppBaseHist_f) fclose(ppBaseHist_f);
+    if (kCounts_f) fclose(kCounts_f);
 
     free(lengthHist->d); free(lengthHist);
+    free(gcHist->d); free(gcHist);
     free(kCounts->d); free(kCounts);
     free(qualHist->d); free(qualHist);
-    free(ppQualHist->d); free(ppQualHist); free(ppCountHist);
+    free(ppQualHist->d); free(ppQualHist);
+    free(ppCountHist->d); free(ppCountHist);
     free(bAHist->d); free(bAHist);
     free(bCHist->d); free(bCHist);
     free(bGHist->d); free(bGHist);

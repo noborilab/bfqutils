@@ -130,7 +130,7 @@ static inline int trim3p(kseq_t *read, const int trimQ, const int trimW) {
                 avgQual += pow(10, ((double) (read->qual.s[j] - 33) / (-10.0)));
             }
             avgQual /= trimW;
-            if (((int) log10(avgQual) * -10.0) < trimQ) {
+            if ((log10(avgQual) * -10.0) < (double) trimQ) {
                 toTrim = i;
             } else {
                 break;
@@ -179,7 +179,8 @@ static inline int trim_read(kseq_t *read, const char *adp, const int alen, const
 
     if (found) {
         if (pos < 0) {
-            return 0;
+            read->seq.l = 0;
+            read->qual.l = 0;
         } else {
             read->seq.s[pos] = 0;
             read->seq.l = (size_t) pos;
@@ -189,7 +190,7 @@ static inline int trim_read(kseq_t *read, const char *adp, const int alen, const
         return pos;
     }
 
-    return 0;
+    return -1;
 
 }
 
@@ -225,7 +226,8 @@ static void fqtrimse(const char *reads, const char *adp, const int minPhredQual,
         nReads++;
         if (!trim3p(read, trimQ, trimW)) continue;
         if (!trimPolyG(read, polyG_n)) continue;
-        if (!trim_read(read, adp, alen, cstart)) continue;
+        trim_read(read, adp, alen, cstart);
+        if (read->seq.l == 0) continue;
         int lowQualNum = 0, nBaseNum = 0;
         for (int i = 0; i < (int) read->qual.l; i++) {
           if (read->qual.s[i] < minPhredQual) lowQualNum++;
@@ -267,7 +269,7 @@ int main_trimse(int argc, char *argv[]) {
     int polyG_n = DEFAULT_POLYG_N;
     int trimQ = DEFAULT_TRIM_QUAL;
     int trimW = DEFAULT_TRIM_WIN;
-    int maxLen = 0, minLen = 0;
+    int maxLen = 0, minLen = DEFAULT_MIN_LEN;
     char *adp = DEFAULT_ADP;
     bool gzip = false, quiet = false;
     

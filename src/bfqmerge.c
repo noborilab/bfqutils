@@ -245,7 +245,7 @@ static inline int trim3p(kseq_t *read, const int trimQ, const int trimW) {
                 avgQual += pow(10, ((double) (read->qual.s[j] - 33) / (-10.0)));
             }
             avgQual /= trimW;
-            if (((int) log10(avgQual) * -10.0) < trimQ) {
+            if ((log10(avgQual) * -10.0) < (double) trimQ) {
                 toTrim = i;
             } else {
                 break;

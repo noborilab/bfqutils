@@ -30,7 +30,7 @@ static void help(void) {
         "bfqutils v%s  Copyright (C) %s  Benjamin Jean-Marie Tremblay\n"
         "Usage:  bfqutils <subcommand> [options]\n"
         "Available subcommands:\n"
-        "    trimse     Adapter trimming for single-rend reads\n"
+        "    trimse     Adapter trimming for single-end reads\n"
         "    merge      Paired-end read merging\n"
         "    stats      FastQ statistics\n"
         "    version    Print the version number and exit\n"
