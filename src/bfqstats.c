@@ -432,11 +432,12 @@ int main_stats(int argc, char *argv[]) {
             }
         }
         if (outReads) {
+            const char *cmt = read->comment.l ? read->comment.s : "";
             if (outReadsAreGz) {
-                gzprintf(outputGz, "@%s %s\n%s\n+\n%s\n", read->name.s, read->comment.s,
+                gzprintf(outputGz, "@%s %s\n%s\n+\n%s\n", read->name.s, cmt,
                     read->seq.s, read->qual.s);
             } else {
-                printf("@%s %s\n%s\n+\n%s\n", read->name.s, read->comment.s,
+                printf("@%s %s\n%s\n+\n%s\n", read->name.s, cmt,
                     read->seq.s, read->qual.s);
             }
         }
