@@ -395,7 +395,7 @@ int main_merge(int argc, char *argv[]) {
     bool gzip = false, quiet = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:t:w:m:zqvh")) != -1) {
+    while ((opt = getopt(argc, argv, "o:d:p:Q:u:n:g:t:w:m:zqvh")) != -1) {
         switch (opt) {
             case 'o':
                 overlapRequire = atoi(optarg);

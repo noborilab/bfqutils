@@ -274,7 +274,7 @@ int main_trimse(int argc, char *argv[]) {
     bool gzip = false, quiet = false;
     
     int opt;
-    while ((opt = getopt(argc, argv, "a:Q:u:n:t:w:m:M:zqvh")) != -1) {
+    while ((opt = getopt(argc, argv, "a:Q:u:n:g:t:w:m:M:zqvh")) != -1) {
         switch (opt) {
             case 'a':
                 adp = optarg;

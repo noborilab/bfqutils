@@ -229,6 +229,7 @@ static int *statOrder(const stat_t *stat) {
 }
 
 static int calcGC(const char *seq, const int l) {
+    if (l == 0) return 0;
     int gc = 0;
     for (int i = 0; i < l; i++) {
         gc += (seq[i] == 'G' | seq[i] == 'C');
@@ -293,6 +294,7 @@ int main_stats(int argc, char *argv[]) {
                 break;
             case 'n':
                 nReadsMax = (int64_t) strtod(optarg, &end);
+                if (end == optarg || *end != '\0') quit("Error: -n must be an integer");
                 if (nReadsMax < 0) quit("Error: -n must be a positive integer");
                 break;
             case 'O':
@@ -422,10 +424,12 @@ int main_stats(int argc, char *argv[]) {
                     }
                 }
             }
-            avgQual /= (double) read->seq.l;
-            readQual = min(94, (int) (log10(avgQual) * -10.0));
-            if (readQual + 1 > qualHist->l) allocMoreStat(qualHist, readQual + 1);
-            qualHist->d[readQual]++;
+            if (read->seq.l > 0) {
+                avgQual /= (double) read->seq.l;
+                readQual = min(94, (int) (log10(avgQual) * -10.0));
+                if (readQual + 1 > qualHist->l) allocMoreStat(qualHist, readQual + 1);
+                qualHist->d[readQual]++;
+            }
         }
         if (outReads) {
             if (outReadsAreGz) {
@@ -449,20 +453,26 @@ int main_stats(int argc, char *argv[]) {
         const int lengthMedian = statMedian(lengthHist, nReads);
         statf_t *kEnr = initStatf(kCounts->m);
         kEnr->l = kCounts->l;
-        const double kExp = (double) nKmers / kCounts->l;
+        const double kExp = nKmers > 0 ? (double) nKmers / kCounts->l : 0;
         for (int i = 0; i < kCounts->l; i++) {
-            kEnr->d[i] = (double) kCounts->d[i] / kExp;
+            kEnr->d[i] = kExp > 0 ? (double) kCounts->d[i] / kExp : 0;
         }
         int *kOrd = statOrder(kCounts);
 
         fprintf(ovStats_f, "Total reads: %'lld\n", nReads);
         fprintf(ovStats_f, "Median length: %d\n", lengthMedian);
-        fprintf(ovStats_f, "Base composition:\n A: %.1f%%\n C: %.1f%%\n G: %.1f%%\n T: %.1f%%\n N: %.1f%%\n",
-            100.0 * (double) nA / bases, 100.0 * (double) nC / bases,
-            100.0 * (double) nG / bases, 100.0 * (double) nT / bases,
-            100.0 * (double) nN / bases);
-        fprintf(ovStats_f, "Q20 bases: %.1f%%\n", 100.0 * (double) q20 / bases);
-        fprintf(ovStats_f, "Q30 bases: %.1f%%\n", 100.0 * (double) q30 / bases);
+        if (bases > 0) {
+            fprintf(ovStats_f, "Base composition:\n A: %.1f%%\n C: %.1f%%\n G: %.1f%%\n T: %.1f%%\n N: %.1f%%\n",
+                100.0 * (double) nA / bases, 100.0 * (double) nC / bases,
+                100.0 * (double) nG / bases, 100.0 * (double) nT / bases,
+                100.0 * (double) nN / bases);
+            fprintf(ovStats_f, "Q20 bases: %.1f%%\n", 100.0 * (double) q20 / bases);
+            fprintf(ovStats_f, "Q30 bases: %.1f%%\n", 100.0 * (double) q30 / bases);
+        } else {
+            fprintf(ovStats_f, "Base composition: N/A (no bases)\n");
+            fprintf(ovStats_f, "Q20 bases: N/A\n");
+            fprintf(ovStats_f, "Q30 bases: N/A\n");
+        }
         fprintf(ovStats_f, "Top 10 k-mers:\n");
 
         char kmerStr[MAX_KMER + 1];
