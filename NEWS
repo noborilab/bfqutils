@@ -1,0 +1,96 @@
+CHANGES IN VERSION 1.2.3 (2026-04-30)
+--------------------------------------
+
+* Fixed undefined behaviour in `stats -O` output when reads have no
+  whitespace-separated comment in their header line. The comment field
+  was passed as NULL to printf, producing a literal "(null)" token in
+  the output and corrupting downstream FASTQ parsing.
+
+CHANGES IN VERSION 1.2.2 (2026-04-30)
+--------------------------------------
+
+* Fixed the -g flag having no effect in `trimse` and `merge`. The option
+  was documented and handled in code but was missing from the getopt
+  option string, so passing -g caused an "invalid option" error instead
+  of configuring the polyG tail trimming threshold.
+
+* Fixed undefined behaviour in `stats` when encountering reads with a
+  zero-length sequence (empty reads, or reads trimmed to nothing by
+  3-prime quality trimming). Division by zero and a subsequent cast from
+  NaN to int were both UB.
+
+* Fixed `stats` k-mer obs/exp ratios printing NaN or inf when no valid
+  k-mers were observed (e.g. all reads contain only Ns, or all reads are
+  shorter than the chosen -K value).
+
+* Fixed base-composition and Q20/Q30 percentages in `stats` printing NaN
+  when all reads in the input have zero-length sequences.
+
+* Fixed `stats -n` accepting non-numeric arguments silently (e.g. -n abc
+  was treated as -n 0, disabling the read limit).
+
+CHANGES IN VERSION 1.2.1 (2026-04-30)
+--------------------------------------
+
+* Fixed `trimse` silently discarding reads for which no adapter match was
+  found. Only reads trimmed to zero length (adapter at position 0) should
+  be dropped.
+
+* Fixed `trimse` ignoring the default minimum read length of 15 bp. The
+  -M default was initialised to 0 instead of 15.
+
+* Fixed `trimse` and `merge` 3-prime quality trimming using integer
+  arithmetic for the mean-window Phred comparison, causing the threshold
+  to snap to the nearest multiple of 10.
+
+* Fixed `stats` reporting mean quality as the median read length. The
+  statMedian function was accumulating base counts rather than read counts.
+
+* Fixed `stats` crashing on exit when no histogram output files were
+  requested. Several FILE handles were unconditionally passed to fclose
+  despite being NULL.
+
+* Fixed `stats` writing summary output to stdout instead of stderr when
+  no -o file was specified.
+
+* Fixed `stats` error message for -z used without -O referring to -o
+  instead of -O.
+
+* Fixed several memory leaks in `stats`: GC histogram and per-position
+  count histogram data arrays were not freed on exit.
+
+* Fixed a typo in the `bfqutils` help text ("single-rend" -> "single-end").
+
+CHANGES IN VERSION 1.2.0 (2025-10-23)
+--------------------------------------
+
+* `trimse` now accepts multiple comma-separated input filenames, matching
+  the existing behaviour of `merge`.
+
+CHANGES IN VERSION 1.1.0 (2025-10-18)
+--------------------------------------
+
+* All tools are now distributed as subcommands of a single `bfqutils`
+  binary: `bfqutils merge`, `bfqutils trimse`, `bfqutils stats`.
+
+* `merge` accepts multiple comma-separated input filename pairs to
+  process several samples in a single invocation.
+
+CHANGES IN VERSION 1.0 (2025-04-22)
+-------------------------------------
+
+* Initial release of the separate bfqmerge, bfqtrimse, and bfqstats
+  binaries.
+
+* bfqmerge: paired-end read merging via overlap detection with
+  configurable mismatch tolerance (-o, -d, -p). Includes polyG tail
+  trimming (-g), 3-prime window quality trimming (-t, -w), and
+  post-merge quality filtering (-Q, -u, -n).
+
+* bfqtrimse: single-end adapter trimming with polyG tail trimming,
+  3-prime window quality trimming, and length/quality filtering.
+
+* bfqstats: FastQ quality statistics including read length and GC
+  content histograms, per-position quality and base composition, k-mer
+  counts and obs/exp enrichment scores, and optional passthrough output
+  (-O).
