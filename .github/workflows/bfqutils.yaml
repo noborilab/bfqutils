@@ -11,7 +11,7 @@ jobs:
       - name: build
         run: make libz && make release
       - name: test
-        run: ./bfqutils version
+        run: make test
   ubuntu:
     strategy:
       matrix:
@@ -22,6 +22,6 @@ jobs:
       - name: clone
         uses: actions/checkout@v4
       - name: build
-        run: make libz && make release
+        run: make libz && make release CC=${{ matrix.cc }}
       - name: test
-        run: ./bfqutils version
+        run: make test
