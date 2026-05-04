@@ -1,3 +1,19 @@
+CHANGES IN VERSION 1.2.4 (2026-05-04)
+--------------------------------------
+
+* Fixed k-mer sort order being non-deterministic across platforms. When
+  two k-mers had equal counts, qsort produced different orderings on
+  macOS and Linux due to its unstable sort. A secondary sort by k-mer
+  index now ensures identical output everywhere.
+
+* Expanded test suite: 47 tests across all three subcommands. Per-tool
+  test scripts with dedicated fixtures cover flag-level behaviour, edge
+  cases (empty reads, all-N reads, no-adapter reads, sub-minLen reads,
+  polyG tails, quality-threshold borderline cases, null header comments,
+  known-median distributions), error paths, and stdin/-z/comma-separated
+  input handling. CI now runs the full suite on macOS and on Ubuntu with
+  both gcc and clang.
+
 CHANGES IN VERSION 1.2.3 (2026-04-30)
 --------------------------------------
 
