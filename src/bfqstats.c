@@ -210,7 +210,7 @@ static int cmpv(const void *a, const void *b) {
     const val_t *r = (val_t *) b;
     if (l->v < r->v) return 1;
     if (l->v > r->v) return -1;
-    return 0;
+    return l->i - r->i;
 }
 
 static int *statOrder(const stat_t *stat) {

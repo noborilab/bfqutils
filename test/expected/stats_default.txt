@@ -17,5 +17,5 @@ Top 10 k-mers:
  GGAAGA: 257 (obs/exp = 28.9)
  ATCGGA: 250 (obs/exp = 28.1)
  TCACAT: 245 (obs/exp = 27.5)
- TCTGAA: 244 (obs/exp = 27.4)
+ AACTCC: 244 (obs/exp = 27.4)
  GATCGG: 244 (obs/exp = 27.4)
