@@ -1,0 +1,21 @@
+Total reads: 250
+Median length: 151
+Base composition:
+ A: 21.1%
+ C: 18.2%
+ G: 43.1%
+ T: 17.5%
+ N: 0.1%
+Q20 bases: 72.3%
+Q30 bases: 53.9%
+Top 10 k-mers:
+ GGGGGG: 7,195 (obs/exp = 809.0)
+ CCCCCC: 545 (obs/exp = 61.3)
+ GGGGGT: 322 (obs/exp = 36.2)
+ AGGGGG: 276 (obs/exp = 31.0)
+ TGGGGG: 272 (obs/exp = 30.6)
+ GGAAGA: 257 (obs/exp = 28.9)
+ ATCGGA: 250 (obs/exp = 28.1)
+ TCACAT: 245 (obs/exp = 27.5)
+ TCTGAA: 244 (obs/exp = 27.4)
+ GATCGG: 244 (obs/exp = 27.4)

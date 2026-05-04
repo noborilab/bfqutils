@@ -1,40 +1,25 @@
 #!/bin/bash
+# bfqutils test suite orchestrator.
+# Run from the test/ directory, or via `make test` from the repo root.
 
-echo "Running test of bfqmerge output."
+cd "$(dirname "$0")" || exit 1
+source lib.sh
 
-if ! ../bfqutils merge -q testR1.fq.gz testR2.fq.gz > test.fq ; then
-    echo "Test failed, bfqmerge encountered an error."
-    exit 1
-fi
+total_pass=0
+total_fail=0
 
-diff merged.fq test.fq > diff.txt
+run_suite() {
+    local script=$1
+    PASS=0 FAIL=0
+    source "$script"
+    total_pass=$((total_pass + PASS))
+    total_fail=$((total_fail + FAIL))
+}
 
-if [ -s diff.txt ] ; then
-    echo "Test failed, found the following diff in bfqmerge output:"
-    cat diff.txt
-    exit 1
-else
-    echo "Test succeeded, no changes in bfqmerge output."
-    rm -f test.fq
-    rm -f diff.txt
-fi
+run_suite tests/test_merge.sh
+run_suite tests/test_trimse.sh
+run_suite tests/test_stats.sh
 
-echo "Running test of bfqtrimse output."
-
-if ! ../bfqutils trimse -q testR1.fq.gz > test.fq ; then
-    echo "Test failed, bfqtrimse encountered an error."
-    exit 1
-fi
-
-diff testR1.trim.fq test.fq > diff.txt
-
-if [ -s diff.txt ] ; then
-    echo "Test failed, found the following diff in bfqtrimse output:"
-    cat diff.txt
-    exit 1
-else
-    echo "Test succeeded, no changes in bfqtrimse output."
-    rm -f test.fq
-    rm -f diff.txt
-fi
-
+echo ""
+echo "=== Total: $total_pass/$((total_pass + total_fail)) passed ==="
+[[ $total_fail -eq 0 ]]

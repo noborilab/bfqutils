@@ -1,0 +1,8 @@
+@q15tail Q15_tail_should_not_be_trimmed_with_t15
+ACGTACGTACGTACGTACGTTTCAG
++
+IIIIIIIIIIIIIIIIIIII00000
+@q14tail Q14_tail_should_be_trimmed_with_t15
+ACGTACGTACGTACGTACGTTTCAG
++
+IIIIIIIIIIIIIIIIIIII/////
