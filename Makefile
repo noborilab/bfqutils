@@ -61,13 +61,16 @@ src/bfqmerge.o: src/bfqmerge.c
 src/bfqstats.o: src/bfqstats.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
+src/bfqtrimpe.o: src/bfqtrimpe.c
+	$(CC) $(CFLAGS) -c $^ -o $@
+
 src/bfqtrimse.o: src/bfqtrimse.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 src/bfqutils.o: src/bfqutils.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-bfqutils: src/bfqmerge.o src/bfqstats.o src/bfqtrimse.o src/bfqutils.o
+bfqutils: src/bfqmerge.o src/bfqstats.o src/bfqtrimpe.o src/bfqtrimse.o src/bfqutils.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(ZLIB) $(LDLIBS)
 
 test: bfqutils

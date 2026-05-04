@@ -1,5 +1,5 @@
 #ifndef BFQUTILS_VERSION
-#define BFQUTILS_VERSION "1.2.4"
+#define BFQUTILS_VERSION "1.3.0"
 #endif
 #ifndef BFQUTILS_YEAR
 #define BFQUTILS_YEAR "2026"

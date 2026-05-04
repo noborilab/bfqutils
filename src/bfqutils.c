@@ -22,6 +22,7 @@
 #include <string.h>
 #include "bfqmerge.h"
 #include "bfqstats.h"
+#include "bfqtrimpe.h"
 #include "bfqtrimse.h"
 #include "version.h"
 
@@ -31,6 +32,7 @@ static void help(void) {
         "Usage:  bfqutils <subcommand> [options]\n"
         "Available subcommands:\n"
         "    trimse     Adapter trimming for single-end reads\n"
+        "    trimpe     Adapter trimming for paired-end reads via overlap analysis\n"
         "    merge      Paired-end read merging\n"
         "    stats      FastQ statistics\n"
         "    version    Print the version number and exit\n"
@@ -54,6 +56,8 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     } else if (strcmp(argv[1], "trimse") == 0) {
         return main_trimse(argc - 1, argv + 1);
+    } else if (strcmp(argv[1], "trimpe") == 0) {
+        return main_trimpe(argc - 1, argv + 1);
     } else if (strcmp(argv[1], "merge") == 0) {
         return main_merge(argc - 1, argv + 1);
     } else if (strcmp(argv[1], "stats") == 0) {

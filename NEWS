@@ -1,3 +1,15 @@
+CHANGES IN VERSION 1.3.0 (2026-05-04)
+--------------------------------------
+
+* New `bfqutils trimpe` subcommand: paired-end adapter and quality
+  trimming via overlap analysis. Uses the same overlap-detection
+  algorithm as `merge` to locate the insert boundary on each mate, then
+  truncates R1 and R2 to the insert length without merging them. No
+  adapter sequence is required. Supports separate file output (-1/-2),
+  interleaved stdout (-i), an optional singletons file (-s) for
+  surviving mates whose pair failed filtering, and the same quality and
+  length filter options as `trimse`.
+
 CHANGES IN VERSION 1.2.4 (2026-05-04)
 --------------------------------------
 

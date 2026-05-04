@@ -18,6 +18,7 @@ run_suite() {
 
 run_suite tests/test_merge.sh
 run_suite tests/test_trimse.sh
+run_suite tests/test_trimpe.sh
 run_suite tests/test_stats.sh
 
 echo ""
