@@ -68,7 +68,7 @@ With the exception of `-o`, all default values are identical to fastp. These gen
 
 ## bfqtrimpe
 
-Paired-end adapter trimming using overlap analysis — no adapter sequence required. Like `bfqmerge`, it finds the overlap between R1 and R2 to locate the insert boundary, then truncates each mate to the insert length instead of collapsing them into one read. When no overlap is found, the pair passes through with only 3′ quality trimming and polyG trimming applied. Both mates are filtered independently; if one fails the quality filter its surviving mate can be written to a separate singletons file (`-s`).
+Paired-end adapter trimming using overlap analysis (no adapter sequence required). Like `bfqmerge`, it finds the overlap between R1 and R2 to locate the insert boundary, then truncates each mate to the insert length instead of collapsing them into one read. When no overlap is found, the pair passes through with only 3′ quality trimming and polyG trimming applied. Both mates are filtered independently; if one fails the quality filter its surviving mate can be written to a separate singletons file (`-s`).
 
 ### Usage
 
